@@ -1,0 +1,50 @@
+[package]
+name = "frontend"
+version = "0.1.0"
+authors = ["Hamza <muhammadhamza1311@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+log = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+wasm-bindgen = { version = "0.2.58", features = [ "serde-serialize" ] }
+wasm-logger = "0.2"
+wee_alloc = { version = "0.4.4", optional = true }
+#yew = "0.17"
+yew = { git="https://github.com/teymour-aldridge/yew", branch="file-components" }
+yew-router = { git="https://github.com/teymour-aldridge/yew", branch="file-components" }
+wasm-bindgen-futures = "0.4.3"
+
+js-sys = "0.3"
+
+uuid = { version = "0.8", features = ["serde", "v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+#yew_styles = { version="0.7", features=["modal"] }
+
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
+
+[dependencies.web-sys]
+version = "0.3.35"
+features = [
+    'Headers',
+    'Request',
+    'RequestInit',
+    'RequestMode',
+    'Response',
+    'Window',
+
+    "Blob",
+    "ErrorEvent",
+    "FileReader",
+    "MessageEvent",
+    "ProgressEvent",
+    "WebSocket",
+]
+

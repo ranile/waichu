@@ -1,0 +1,242 @@
+:root {
+    --bg-color: #121212fa;
+    --bg-color-secondary: rgba(30, 29, 29, 0.9);
+    --hover-color: rgba(35, 35, 35, 0.79);
+    --text-color: #d7d7d7;
+    --button-bg-color: #424242;
+    --selected-color: #312626a6;
+    --link-color: #731bbf;
+
+    --std-box-shadow: 0 3px 5px -1px rgba(0, 0, 0, .2), 0 5px 8px 0 rgba(0, 0, 0, .14), 0 1px 14px 0 rgba(0, 0, 0, .12);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    border: none;
+
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+button {
+    background-color: var(--button-bg-color);
+    color: var(--text-color);
+    padding: 0.5em;
+    cursor: pointer;
+    border-radius: 0.5em;
+}
+
+input, textarea {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 2px solid rgba(135, 135, 135, 0.9);
+    width: -moz-available;
+    font-size: 1.1em;
+    padding: 0.5em;
+    border-radius: 1em;
+}
+
+textarea {
+    padding: 0.7em 1.5em 0.5em;
+}
+
+input:focus, textarea:focus-within {
+    border: 2px solid blue;
+}
+
+
+.login-form-container {
+    display: flex;
+    height: 100vh;
+
+    .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5em;
+        padding: 2em;
+        margin: auto;
+
+        input {
+            margin: 0.8em 0;
+        }
+
+        button {
+            font-size: 1em;
+        }
+    }
+
+}
+
+.main-content {
+    display: flex;
+    flex-direction: row;
+
+    .rooms-bar {
+        height: 100vh;
+        width: 15%;
+        background-color: var(--bg-color-secondary);
+
+        .rooms-bar-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+            padding: 0.8em 2em;
+            box-shadow: var(--std-box-shadow);
+
+            span {
+                font-size: 1.5em;
+                font-weight: bold;
+            }
+        }
+
+        .rooms-list {
+            display: flex;
+            flex-direction: column;
+            padding: 1em;
+            gap: 0.5em;
+            overflow-y: auto;
+            max-height: calc(100vh - 6em);
+
+            span {
+                padding: 1em;
+            }
+
+            span:hover {
+                background-color: var(--hover-color);
+                cursor: pointer;
+            }
+
+            .room-selected {
+                background-color: var(--selected-color);
+                border-radius: 1.3em;
+            }
+        }
+    }
+
+    .selected-room {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+
+        .selected-room-header {
+            display: flex;
+            padding: 0.8em 2em;
+            box-shadow: var(--std-box-shadow);
+        }
+
+        .messages-container {
+            padding: 2em;
+            margin-top: auto;
+
+            .messages {
+                display: flex;
+                flex-direction: column;
+                gap: 0.7em;
+                font-size: 1.1em;
+                margin-bottom: 1.5em;
+
+                max-height: calc(100vh - 12em);
+                overflow-y: auto;
+
+                .single-message {
+                    //padding: 1em;
+                }
+
+                .single-message:hover {
+                    background-color: var(--hover-color);
+                }
+            }
+
+            .message-input-container {
+                margin: 1em 0 0 0;
+                display: flex;
+            }
+        }
+    }
+}
+
+.dialog {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    box-shadow: var(--std-box-shadow);
+
+
+    .dialog-content {
+        display: flex;
+        margin: auto;
+        padding: 2em;
+        gap: 1.5em;
+        flex-direction: column;
+        width: 35%;
+        background-color: var(--bg-color);
+        border-radius: 2em;
+
+        .header {
+            display: flex;
+            align-items: center;
+
+            button {
+                background-color: transparent;
+                width: auto;
+                font-weight: bold;
+            }
+
+            :last-child {
+                margin-left: auto;
+            }
+        }
+
+        button {
+            width: 18%;
+        }
+    }
+}
+
+.dialog-open {
+    display: block;
+}
+
+.divider {
+    //border-bottom: 2px solid crimson;
+    display: block;
+    padding-top: 1em;
+}
+
+
+.right-section {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.material-icons {
+    padding: 0;
+}
+
+.transparent {
+    background-color: transparent;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.link-button {
+    border: none;
+    padding: 0;
+    background-color: transparent;
+    color: var(--link-color);
+}
