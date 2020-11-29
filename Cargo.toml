@@ -1,17 +1,6 @@
-[package]
-name = "chatr"
-version = "0.1.0"
-authors = ["Hamza"]
-edition = "2018"
-
 [workspace]
-
 members = [
-    "backend",
-    "frontend"
+    'backend',
+    'frontend',
+    'common',
 ]
-
-[dependencies]
-tokio = { version = "0.2", features = ["macros"] }
-#warp = "0.2"
-backend = { path = "backend" }

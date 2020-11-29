@@ -1,13 +1,9 @@
-use crate::app::APP_STATE;
+pub mod auth;
+pub mod room;
 
-pub mod message_service;
-pub mod auth_service;
-pub mod user_service;
-pub mod rooms_service;
-
-pub fn get_token() -> Option<String> {
-    APP_STATE.with(|f| {
-        let state = f.borrow();
-        state.token.clone()
-    })
+fn url(route: &str) -> String {
+    // let base = "http://localhost:9090/"
+    // let base = "http://localhost:9090";
+    let base = yew::utils::window().location().origin().unwrap();
+    format!("{}{}", base, route)
 }

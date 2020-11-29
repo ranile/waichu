@@ -1,0 +1,75 @@
+# eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6InNpZ25pbmdfa2V5In0.eyJzdWJqZWN0IjoiMjkxM2Y5NjAtNjY0Ni00ZmQxLThkMmEtOGU4OTM3NmU2ZjAyIiwiY29tcGFueSI6IndhaWNodSIsImV4cCI6MTAwMDAwMDAwMDB9.jqAMhvJ3tFcnKxU6Pk15nYc1DLe9kmLeSreSkE3rfwZjq2xoNA3CSCdyCnvdfFGO_x0J4QvhQ2K2Q3SzAhMX3g
+
+POST http://localhost:9090/api/auth/signup
+Content-Type: application/json
+
+{
+    "username": "name4",
+    "password": "pass"
+}
+
+###
+
+POST http://localhost:9090/api/auth/signin
+Content-Type: application/json
+
+{
+    "username": "name2",
+    "password": "pass"
+}
+
+###
+
+POST http://localhost:9090/api/rooms/
+Content-Type: application/json
+Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6InNpZ25pbmdfa2V5In0.eyJzdWJqZWN0IjoiNmIwNWQwMDYtN2Q0Mi00N2JmLTljYzAtZjJkMGFjYzE1MmFlIiwiY29tcGFueSI6IndhaWNodSIsImV4cCI6MTAwMDAwMDAwMDB9.XlzjZl2IS5cBle_mAQeHXsoPg5h3jEmKTC5BtvMzO6LbHOPLrga9pxnDPNLhvlv8tMXffYCm0RKrNNFG0z7lYQ
+
+{
+    "name": "room 1"
+}
+
+###
+
+GET http://localhost:9090/api/rooms/027d3f28-35a9-4e90-b32e-f61c31761f67
+Accept: application/json
+Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6InNpZ25pbmdfa2V5In0.eyJzdWJqZWN0IjoiNmIwNWQwMDYtN2Q0Mi00N2JmLTljYzAtZjJkMGFjYzE1MmFlIiwiY29tcGFueSI6IndhaWNodSIsImV4cCI6MTAwMDAwMDAwMDB9.XlzjZl2IS5cBle_mAQeHXsoPg5h3jEmKTC5BtvMzO6LbHOPLrga9pxnDPNLhvlv8tMXffYCm0RKrNNFG0z7lYQ
+
+###
+
+POST http://localhost:9090/api/rooms/027d3f28-35a9-4e90-b32e-f61c31761f67/join
+Content-Type: application/json
+Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6InNpZ25pbmdfa2V5In0.eyJzdWJqZWN0IjoiNmIwNWQwMDYtN2Q0Mi00N2JmLTljYzAtZjJkMGFjYzE1MmFlIiwiY29tcGFueSI6IndhaWNodSIsImV4cCI6MTAwMDAwMDAwMDB9.XlzjZl2IS5cBle_mAQeHXsoPg5h3jEmKTC5BtvMzO6LbHOPLrga9pxnDPNLhvlv8tMXffYCm0RKrNNFG0z7lYQ
+
+{
+    "member": "81f2d327-0838-4b05-87c5-6962680c560d",
+    "with_elevated_permissions": true
+}
+
+###
+
+GET http://localhost:9090/api/users/me
+Accept: application/json
+Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6InNpZ25pbmdfa2V5In0.eyJzdWJqZWN0IjoiNmIwNWQwMDYtN2Q0Mi00N2JmLTljYzAtZjJkMGFjYzE1MmFlIiwiY29tcGFueSI6IndhaWNodSIsImV4cCI6MTAwMDAwMDAwMDB9.XlzjZl2IS5cBle_mAQeHXsoPg5h3jEmKTC5BtvMzO6LbHOPLrga9pxnDPNLhvlv8tMXffYCm0RKrNNFG0z7lYQ
+
+###
+
+GET http://localhost:9090/api/users/6b05d006-7d42-47bf-9cc0-f2d0acc152ae
+Accept: application/json
+
+###
+
+POST http://localhost:9090/api/rooms/027d3f28-35a9-4e90-b32e-f61c31761f67/messages/
+Content-Type: application/json
+Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6InNpZ25pbmdfa2V5In0.eyJzdWJqZWN0IjoiODFmMmQzMjctMDgzOC00YjA1LTg3YzUtNjk2MjY4MGM1NjBkIiwiY29tcGFueSI6IndhaWNodSIsImV4cCI6MTAwMDAwMDAwMDB9.5BzJTBu1GUPcoVyiib_ivFMzTnGx0N7dW7o1M9Srbkceh8iznkHFq2Zyve5mZBYqQN7un9fdliBGtUYGqVSjHg
+
+{
+    "content": "work 5"
+}
+
+###
+
+GET http://localhost:9090/api/rooms/027d3f28-35a9-4e90-b32e-f61c31761f67/messages/
+Content-Type: application/json
+Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6InNpZ25pbmdfa2V5In0.eyJzdWJqZWN0IjoiODFmMmQzMjctMDgzOC00YjA1LTg3YzUtNjk2MjY4MGM1NjBkIiwiY29tcGFueSI6IndhaWNodSIsImV4cCI6MTAwMDAwMDAwMDB9.5BzJTBu1GUPcoVyiib_ivFMzTnGx0N7dW7o1M9Srbkceh8iznkHFq2Zyve5mZBYqQN7un9fdliBGtUYGqVSjHg
+
+###

@@ -1,0 +1,295 @@
+* {
+    margin: 0;
+}
+
+:root {
+    --mdc-theme-primary: #3f51b5;
+    --mdc-theme-text-primary-on-background: rgba(0, 0, 0, 0.87);
+    --mdc-theme-error: #b00020
+}
+
+/*Failed attempt at bad dark mode
+@media (prefers-color-scheme: dark) {
+    $almost-white: #d7d7d7;
+    $background-primary: #121212;
+    $background-secondary: #212121;
+
+    :root {
+        --mdc-theme-primary: $almost-white;
+        --mdc-theme-secondary: #e91e63;
+        --mdc-theme-background: $background-secondary;
+        --mdc-theme-surface: $background-secondary;
+        --mdc-theme-error: #b00020;
+        --mdc-theme-on-primary: $almost-white;
+        --mdc-theme-on-secondary: $almost-white;
+        --mdc-theme-on-surface: $almost-white;
+        --mdc-theme-on-error: $almost-white;
+        --mdc-theme-text-primary-on-background: $almost-white;
+        --mdc-theme-text-secondary-on-background: rgba(255, 255, 255, 0.7);
+        --mdc-theme-text-hint-on-background: rgba(255, 255, 255, 0.5);
+        --mdc-theme-text-disabled-on-background: rgba(255, 255, 255, 0.5);
+        --mdc-theme-text-icon-on-background: rgba(255, 255, 255, 0.5);
+        --mdc-theme-text-primary-on-light: rgba(255, 255, 255, 0.87);
+        --mdc-theme-text-secondary-on-light: rgba(255, 255, 255, 0.54);
+        --mdc-theme-text-hint-on-light: rgba(255, 255, 255, 0.38);
+        --mdc-theme-text-disabled-on-light: rgba(255, 255, 255, 0.38);
+        --mdc-theme-text-icon-on-light: rgba(255, 255, 255, 0.38);
+        --mdc-theme-text-primary-on-dark: white;
+        --mdc-theme-text-secondary-on-dark: rgba(255, 255, 255, 0.7);
+        --mdc-theme-text-hint-on-dark: rgba(255, 255, 255, 0.5);
+        --mdc-theme-text-disabled-on-dark: rgba(255, 255, 255, 0.5);
+        --mdc-theme-text-icon-on-dark: rgba(255, 255, 255, 0.5);
+
+        --mdc-dialog-content-ink-color: $almost-white;
+        --mdc-dialog-heading-ink-color: $almost-white;
+
+        --mdc-text-field-filled-border-radius: 4px 4px 0 0;
+        --mdc-text-field-idle-line-color: rgba(255, 255, 255, 0.42);
+        --mdc-text-field-hover-line-color: rgba(255, 255, 255, 0.87);
+        --mdc-text-field-disabled-line-color: rgba(255, 255, 255, 0.06);
+        --mdc-text-field-outlined-idle-border-color: rgba(255, 255, 255, 0.38);
+        --mdc-text-field-outlined-hover-border-color: rgba(255, 255, 255, 0.87);
+        --mdc-text-field-outlined-disabled-border-color: rgba(255, 255, 255, 0.06);
+        --mdc-text-field-fill-color: rgb(10, 10, 10);
+        --mdc-text-field-disabled-fill-color: rgb(5, 5, 5);
+        --mdc-text-field-ink-color: rgba(255, 255, 255, 0.87);
+        --mdc-text-field-label-ink-color: rgba(255, 255, 255, 0.6);
+    }
+
+    body {
+        background: $background-primary;
+        color: $almost-white;
+    }
+
+    mwc-drawer {
+        height: 100vh;
+        --mdc-theme-text-primary-on-background: none;
+        color: rgba(0, 0, 0, .87);
+    }
+
+    mwc-top-app-bar {
+        --mdc-theme-primary: $background-secondary;
+
+        .room-name {
+            color: $almost-white;
+        }
+    }
+
+    .user-profile-dialog-container {
+        mwc-button {
+            --mdc-theme-primary: $almost-white;
+        }
+    }
+}*/
+
+mwc-drawer {
+    height: 100vh;
+}
+
+mwc-dialog {
+    --mdc-dialog-min-width: 35vw;
+}
+
+.new-room mwc-button {
+    width: 100%;
+}
+
+.create-room-container {
+    display: flex;
+    justify-content: center;
+}
+
+#auth-wrapper-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+
+    #auth-wrapper {
+        width: 35vw;
+        margin: auto;
+
+        .mdc-card {
+            align-items: center;
+            height: min-content;
+
+            mwc-tab-bar {
+                width: 100%;
+            }
+
+            mwc-linear-progress {
+                width: 35vw;
+            }
+
+            .card-content {
+                display: flex;
+                gap: 1em;
+                flex-direction: column;
+                padding-bottom: 1em;
+                padding-top: 2em;
+
+                mwc-textfield {
+                    width: 20vw;
+                }
+
+                .error {
+                    color: var(--mdc-theme-error);
+                    display: flex;
+                    gap: 0.2em;
+                    align-content: center;
+                    font-size: 0.8em;
+                    --mdc-icon-size: 1.4em;
+
+                    span {
+                        margin: auto 0;
+                        width: 18vw;
+                    }
+                }
+            }
+
+            .mdc-card__action-buttons {
+                padding: 1em 0 2em 0;
+            }
+        }
+    }
+}
+
+.room-name {
+    cursor: pointer;
+}
+
+.room-content {
+    height: calc(100% - 80px);
+    overflow: auto;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 0 0 1em 1em;
+}
+
+.room-info {
+    header {
+        display: flex;
+        padding: 1em 0;
+        gap: 0.5em;
+    }
+
+    .room-members-container {
+        .add-user-button-container {
+            cursor: pointer;
+            --mdc-icon-size: 2em;
+        }
+
+        article {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+            padding: 0.5em 0;
+
+            img {
+                max-width: 2em;
+                max-height: 2em;
+                border-radius: 50%;
+            }
+        }
+    }
+}
+
+.messages-container {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 1em;
+    align-self: flex-end;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+.message-card {
+    --mdc-typography-body2-font-size: 0.95em;
+
+    mwc-list-item {
+        mwc-icon {
+            padding-right: 0.5em;
+        }
+
+        span {
+            font-size: 1.1em;
+            color: var(--mdc-theme-text-primary-on-background);
+        }
+
+        span[slot="secondary"] {
+            font-size: 1em;
+            color: var(--mdc-theme-text-primary-on-background);
+        }
+    }
+
+    //display: flex;
+    //gap: 1em;
+    //
+    //.content-container {
+    //    display: flex;
+    //    flex-direction: column;
+    //    gap: 0.3em;
+    //
+    //    .author {
+    //        font-weight: 500;
+    //        font-size: 1.1em;
+    //    }
+    //}
+}
+
+//.message-card:last-child {
+//    padding-top: 1em;
+//}
+//
+//.message-card:hover {
+//    background-color: rgba(255, 255, 255, 0.1);
+//    border-radius: 16px;
+//    margin-right: 1em;
+//}
+
+.new-message-form-container {
+    padding: 1em 1em 0;
+
+    display: flex;
+    align-items: center;
+
+    mwc-formfield {
+        width: 100%;
+    }
+
+    mwc-textarea {
+        width: 100%;
+        height: 60px;
+    }
+}
+
+.user-avatar {
+    --mdc-icon-size: 45px;
+
+    mwc-icon-button {
+        img {
+            border-radius: 50%;
+        }
+    }
+}
+
+.user-profile-dialog-container {
+    .profile-dialog-container {
+        display: flex;
+        gap: 1.5em;
+        align-items: center;
+        flex-direction: column;
+
+        img {
+            border-radius: 50%;
+            max-height: 50%;
+            max-width: 50%;
+        }
+
+        span {
+            font-size: 1.3em;
+        }
+    }
+}
