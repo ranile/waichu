@@ -35,13 +35,11 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          toolchain: nightly
           args: -p backend -p common -- -D warnings
 
       - name: Run clippy on frontend & common (wasm target)
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          toolchain: nightly
           target: wasm32-unknown-unknown
           args: -p frontend -p common -- -D warnings
