@@ -28,6 +28,9 @@ use yew_state::{SharedHandle, SharedState, SharedStateComponent};
 use yew::services::StorageService;
 use yew::format::Text;
 
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 lazy_static! {
     pub static ref CLIENT: Client = Client::new();
 }

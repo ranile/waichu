@@ -1,20 +1,45 @@
 use crate::bail_if_err;
 use futures::future::BoxFuture;
-use sqlx::{Connection, PgPool, Postgres};
+use sqlx::{PgPool, Postgres};
 use warp::{Rejection, Reply};
 
 pub type Transaction<'c> = sqlx::Transaction<'c, Postgres>;
 
-pub async fn with_transaction<F, R>(pool: PgPool, callback: F) -> Result<impl Reply, Rejection>
-where
-    for<'c> F:
-        FnOnce(&'c mut Transaction) -> BoxFuture<'c, anyhow::Result<R>> + 'static + Send + Sync,
-    R: Reply,
+fn transaction<F, R, E>(pool: PgPool, callback: F) -> BoxFuture<'static, Result<R, E>>
+    where
+            for<'c> F:
+    FnOnce(&'c mut Transaction) -> BoxFuture<'c, Result<R, E>> + 'static + Send + Sync,
+            R: Send,
+            E: From<sqlx::Error> + Send,
 {
-    let mut conn = bail_if_err!(pool.acquire().await.map_err(anyhow::Error::from));
+    Box::pin(async move {
+        let mut transaction = pool.begin().await?;
+        let ret = callback(&mut transaction).await;
 
-    let ret: anyhow::Result<R> = conn
-        .transaction(|db| Box::pin(async move { Ok(callback(db).await?) }))
+        match ret {
+            Ok(ret) => {
+                transaction.commit().await?;
+
+                Ok(ret)
+            }
+            Err(err) => {
+                transaction.rollback().await?;
+
+                Err(err)
+            }
+        }
+    })
+}
+
+pub async fn with_transaction<F, R>(pool: PgPool, callback: F) -> Result<impl Reply, Rejection>
+    where
+            for<'c> F:
+    FnOnce(&'c mut Transaction) -> BoxFuture<'c, anyhow::Result<R>> + 'static + Send + Sync,
+            R: Reply, {
+    let ret: anyhow::Result<R> = transaction(
+        pool,
+        |db| Box::pin(async move { Ok(callback(db).await?) }),
+    )
         .await;
 
     let ret = bail_if_err!(ret);

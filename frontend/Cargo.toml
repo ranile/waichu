@@ -19,8 +19,15 @@ uuid = { version = "0.8", features = ["serde", "v4", "wasm-bindgen"] }
 js-sys = "0.3"
 yew-state = { git = "https://github.com/hamza1311/yew-state/", branch = "master-yew" }
 lazy_static = "1.4"
+wee_alloc = "0.4"
 
 yew-material = { git = "https://github.com/hamza1311/yew-material/", features = ["full"] }
 #yew-material = { path = "../../yew-material/yew-material", features = ["full"] }
 
 common = { path = "../common" }
+
+[profile.release]
+panic = 'abort'
+codegen-units = 1
+opt-level = 'z' # todo check if 's' is smaller
+lto = true

@@ -5,8 +5,7 @@ mod services;
 mod utils;
 mod websocket;
 
-use crate::utils::error_reply;
-use http_api_problem::HttpApiProblem;
+use crate::utils::{error_reply, json_with_status};
 pub use macros::*;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::Executor;
@@ -16,7 +15,7 @@ use std::env;
 use std::path::PathBuf;
 use warp::http::StatusCode;
 use warp::path::FullPath;
-use warp::{Filter, Rejection, Reply};
+use warp::{Filter, Rejection};
 
 pub fn setup_logger() -> anyhow::Result<()> {
     fern::Dispatch::new()
@@ -56,11 +55,7 @@ async fn main() {
     let dist_dir = env::var("DIST_DIR").expect("`DIST_DIR` isn't set");
 
     let hello = warp::path!("api" / "hello" / String)
-        .map(|name| format!("Hello, {}!", name))
-        .with(warp::reply::with::header(
-            "Access-Control-Allow-Origin",
-            "*",
-        ));
+        .map(|name| format!("Hello, {}!", name));
 
     let routes = hello
         .or(auth::routes(pool.clone()))
@@ -68,13 +63,10 @@ async fn main() {
         .or(routes::room::routes(pool.clone()))
         .or(routes::user::routes(pool.clone()))
         .or(routes::message::routes(pool.clone()))
-        .or(warp::fs::dir(PathBuf::from(&dist_dir)))
-        // .or(warp::get().and(warp::fs::file(PathBuf::from(format!(
-        //     "{}/index.html",
-        //     dist_dir
-        // )))))
         .or(single_page_application(PathBuf::from(&dist_dir)))
         .recover(handler)
+        .with(warp::compression::gzip())
+
         // only if debug
         .with(
             warp::cors()
@@ -83,12 +75,24 @@ async fn main() {
                 .allow_headers(vec!["authorization"]),
         );
 
-    warp::serve(routes).run(([0, 0, 0, 0], 9090)).await;
+    let (addr, server) = warp::serve(routes)
+        .bind_with_graceful_shutdown(([0, 0, 0, 0], 9090), async {
+            tokio::signal::ctrl_c()
+                .await
+                .expect("failed to install CTRL+C signal handler");
+        });
+
+    tokio::task::spawn(async move {
+        log::info!("running server on http://{}/", addr);
+        server.await;
+    })
+        .await
+        .expect("failed to start server");
 }
 
 fn single_page_application(
     dist_dir: impl Into<PathBuf>,
-) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
+) -> impl Filter<Extract=(impl warp::Reply, ), Error=warp::Rejection> + Clone {
     let dist_dir = dist_dir.into();
 
     let index_fallback = warp::path::full()
@@ -109,11 +113,7 @@ async fn handler(err: Rejection) -> Result<impl warp::Reply, Infallible> {
     }
 
     if let Some(e) = err.find::<crate::utils::CustomRejection>() {
-        return Ok(warp::reply::with_status(
-            warp::reply::json(&e.0),
-            e.0.status_or_internal_server_error(),
-        )
-        .into_response());
+        return Ok(json_with_status(e.0.status_or_internal_server_error(), &e.0));
     }
 
     let mut code = StatusCode::INTERNAL_SERVER_ERROR;
@@ -133,9 +133,6 @@ async fn handler(err: Rejection) -> Result<impl warp::Reply, Infallible> {
         warp::ext::MissingExtension, StatusCode::INTERNAL_SERVER_ERROR
     );
 
-    Ok(warp::reply::with_status(
-        warp::reply::json(&HttpApiProblem::new(&message).set_status(code)),
-        code,
-    )
-    .into_response())
+
+    Ok(error_reply(code, &message))
 }

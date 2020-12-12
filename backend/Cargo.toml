@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 tokio = { version = "0.2", features = ["full"] }
 futures = "0.3"
-warp = { version = "0.2", features = ["websocket"] }
+warp = { version = "0.2", features = ["websocket", "compression"] }
 
 anyhow = "1.0"
 
@@ -20,8 +20,6 @@ serde_json = "1.0"
 bcrypt = "0.9"
 jsonwebtoken = "7.2"
 
-async-trait = "0.1"
-
 chrono = "0.4"
 
 http-api-problem = { version = "0.17", features = ["with-warp"] }
@@ -31,9 +29,7 @@ lazy_static = "1.4"
 common = { path = "../common" }
 
 [dependencies.sqlx]
-#version = "0.4"
-git = "https://github.com/hamza1311/sqlx"
-branch = "transaction-wrapper"
+version = "0.4"
 default-features = false
 features = [
     "runtime-tokio-rustls",
