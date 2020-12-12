@@ -11,7 +11,7 @@ COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 
 FROM rust:latest as builder
-RUN rustup target add wasm32-unknown-unknown
+
 # add wasm32 target, install latest version of trunk, install v0.2.69 of wasm-bindgen-cli
 RUN rustup target add wasm32-unknown-unknown && \
     TRUNK_VERSION=$(curl -s https://api.github.com/repos/thedodd/trunk/releases/latest | grep -oP '(?<="tag_name": ")[^"]*') && \

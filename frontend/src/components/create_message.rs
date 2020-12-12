@@ -1,4 +1,5 @@
 use crate::services::room::send_message;
+use crate::utils::use_token;
 use common::payloads::CreateMessagePayload;
 use common::Room;
 use std::rc::Rc;
@@ -6,7 +7,6 @@ use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew_functional::{function_component, use_state};
 use yew_material::{MatFormfield, MatIconButton, MatTextArea};
-use crate::utils::use_token;
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct CreateMessageProps {

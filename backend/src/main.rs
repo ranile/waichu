@@ -54,8 +54,7 @@ async fn main() {
 
     let dist_dir = env::var("DIST_DIR").expect("`DIST_DIR` isn't set");
 
-    let hello = warp::path!("api" / "hello" / String)
-        .map(|name| format!("Hello, {}!", name));
+    let hello = warp::path!("api" / "hello" / String).map(|name| format!("Hello, {}!", name));
 
     let routes = hello
         .or(auth::routes(pool.clone()))
@@ -66,7 +65,6 @@ async fn main() {
         .or(single_page_application(PathBuf::from(&dist_dir)))
         .recover(handler)
         .with(warp::compression::gzip())
-
         // only if debug
         .with(
             warp::cors()
@@ -75,8 +73,8 @@ async fn main() {
                 .allow_headers(vec!["authorization"]),
         );
 
-    let (addr, server) = warp::serve(routes)
-        .bind_with_graceful_shutdown(([0, 0, 0, 0], 9090), async {
+    let (addr, server) =
+        warp::serve(routes).bind_with_graceful_shutdown(([0, 0, 0, 0], 9090), async {
             tokio::signal::ctrl_c()
                 .await
                 .expect("failed to install CTRL+C signal handler");
@@ -86,13 +84,13 @@ async fn main() {
         log::info!("running server on http://{}/", addr);
         server.await;
     })
-        .await
-        .expect("failed to start server");
+    .await
+    .expect("failed to start server");
 }
 
 fn single_page_application(
     dist_dir: impl Into<PathBuf>,
-) -> impl Filter<Extract=(impl warp::Reply, ), Error=warp::Rejection> + Clone {
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
     let dist_dir = dist_dir.into();
 
     let index_fallback = warp::path::full()
@@ -113,7 +111,10 @@ async fn handler(err: Rejection) -> Result<impl warp::Reply, Infallible> {
     }
 
     if let Some(e) = err.find::<crate::utils::CustomRejection>() {
-        return Ok(json_with_status(e.0.status_or_internal_server_error(), &e.0));
+        return Ok(json_with_status(
+            e.0.status_or_internal_server_error(),
+            &e.0,
+        ));
     }
 
     let mut code = StatusCode::INTERNAL_SERVER_ERROR;
@@ -132,7 +133,6 @@ async fn handler(err: Rejection) -> Result<impl warp::Reply, Infallible> {
         warp::ws::MissingConnectionUpgrade, StatusCode::BAD_REQUEST;
         warp::ext::MissingExtension, StatusCode::INTERNAL_SERVER_ERROR
     );
-
 
     Ok(error_reply(code, &message))
 }

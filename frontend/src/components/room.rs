@@ -1,20 +1,20 @@
 use crate::components::user_avatar::PROFILE_PICTURE_URL;
 use crate::components::{CreateMessage, RoomMessages};
 use crate::services::room::{fetch_room_members, join_room};
+use crate::utils::use_token;
 use common::User;
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
 use weblog::console_log;
 use yew::prelude::*;
-use yew_functional::{
-    function_component, use_effect, use_effect_with_deps, use_state,
-};
+use yew_functional::{function_component, use_effect, use_effect_with_deps, use_state};
 use yew_material::{
     dialog::{ActionType, MatDialogAction},
-    top_app_bar::{MatTopAppBar, MatTopAppBarActionItems, MatTopAppBarTitle,  MatTopAppBarNavigationIcon},
-    MatButton, MatDialog, MatIcon, MatTextField, TextFieldType, WeakComponentLink, MatIconButton
+    top_app_bar::{
+        MatTopAppBar, MatTopAppBarActionItems, MatTopAppBarNavigationIcon, MatTopAppBarTitle,
+    },
+    MatButton, MatDialog, MatIcon, MatIconButton, MatTextField, TextFieldType, WeakComponentLink,
 };
-use crate::utils::use_token;
 
 #[derive(Clone, Properties, PartialEq)]
 struct UserCardProps {

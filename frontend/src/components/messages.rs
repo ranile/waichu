@@ -1,5 +1,6 @@
 use crate::components::SingleMessage;
 use crate::services::room::fetch_room_messages;
+use crate::utils::use_token;
 use crate::websocket::{internal_events, InternalEventBus};
 use common::Room;
 use std::rc::Rc;
@@ -9,7 +10,6 @@ use weblog::console_log;
 use yew::prelude::*;
 use yew_functional::{function_component, use_effect, use_effect_with_deps, use_state};
 use yew_material::MatList;
-use crate::utils::use_token;
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct MessagesProps {

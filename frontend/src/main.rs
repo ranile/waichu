@@ -1,7 +1,7 @@
 mod components;
 mod services;
-mod websocket;
 mod utils;
+mod websocket;
 
 use components::{Auth, Room as ShowRoom, RoomsList, UserAvatar};
 
@@ -16,8 +16,10 @@ use std::rc::Rc;
 use uuid::Uuid;
 use wasm_bindgen::JsValue;
 use weblog::console_log;
+use yew::format::Text;
 use yew::prelude::*;
 use yew::services::storage::Area;
+use yew::services::StorageService;
 use yew_functional::{
     function_component, use_effect, use_effect_with_deps, use_ref, use_state, ContextProvider,
 };
@@ -25,8 +27,6 @@ use yew_material::{MatDrawer, MatDrawerAppContent, MatDrawerTitle, WeakComponent
 use yew_router::agent::RouteRequest;
 use yew_router::prelude::*;
 use yew_state::{SharedHandle, SharedState, SharedStateComponent};
-use yew::services::StorageService;
-use yew::format::Text;
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -47,8 +47,7 @@ const TOKEN_KEY: &str = "token";
 
 impl Default for AppState {
     fn default() -> Self {
-        let service = StorageService::new(Area::Local)
-            .expect("can't initialize StorageService");
+        let service = StorageService::new(Area::Local).expect("can't initialize StorageService");
 
         let token = service.restore::<Text>(TOKEN_KEY).ok();
 
@@ -121,9 +120,7 @@ fn home(props: &HomeProps) -> Html {
     let on_nav_click = {
         let drawer_link = Rc::clone(&drawer_link);
 
-        Callback::from(move |_| {
-            drawer_link.flip_open_state()
-        })
+        Callback::from(move |_| drawer_link.flip_open_state())
     };
 
     let room = if let Some(room) = current {

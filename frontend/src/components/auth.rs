@@ -4,14 +4,14 @@ use common::payloads::Credentials;
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
+use yew::services::storage::Area;
+use yew::services::StorageService;
 use yew_functional::{function_component, use_state};
 use yew_material::{
     MatButton, MatCheckbox, MatFormfield, MatIcon, MatLinearProgress, MatTab, MatTabBar,
     MatTextField, TextFieldType,
 };
 use yew_state::{SharedHandle, SharedStateComponent};
-use yew::services::StorageService;
-use yew::services::storage::Area;
 
 #[function_component(Signin)]
 pub fn signin_comp(handle: &SharedHandle<AppState>) -> Html {
@@ -27,8 +27,8 @@ pub fn signin_comp(handle: &SharedHandle<AppState>) -> Html {
     let onclick = {
         let set_token = Rc::new(handle.reduce_callback_with(|s, (token, remember_me)| {
             if remember_me {
-                let mut service = StorageService::new(Area::Local)
-                    .expect("can't initialize StorageService");
+                let mut service =
+                    StorageService::new(Area::Local).expect("can't initialize StorageService");
 
                 service.store(TOKEN_KEY, Ok(String::from(&token)));
             }
