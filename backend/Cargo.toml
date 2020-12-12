@@ -39,4 +39,5 @@ features = [
     "uuid",
     "chrono", # todo see if time helps
     "json",
+    "migrate",
 ]

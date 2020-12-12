@@ -8,7 +8,6 @@ mod websocket;
 use crate::utils::{error_reply, json_with_status};
 pub use macros::*;
 use sqlx::postgres::PgPoolOptions;
-use sqlx::Executor;
 use sqlx::PgPool;
 use std::convert::Infallible;
 use std::env;
@@ -40,8 +39,9 @@ async fn setup_database() -> anyhow::Result<PgPool> {
         .connect(&env::var("DATABASE_URL")?)
         .await?;
 
-    let mut conn = pool.acquire().await?;
-    conn.execute(include_str!("../schema.sql")).await?;
+    sqlx::migrate!()
+        .run(&pool)
+        .await?;
 
     Ok(pool)
 }

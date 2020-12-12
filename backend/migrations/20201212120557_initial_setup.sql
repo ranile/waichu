@@ -7,7 +7,7 @@ create table if not exists users
     password   text        not null,
     created_at timestamptz not null default now(),
     unique (username)
-);
+    );
 
 -- Rooms
 
@@ -16,7 +16,7 @@ create table if not exists rooms
     uuid       uuid primary key,
     name       text        not null,
     created_at timestamptz not null default now()
-);
+    );
 
 create table if not exists room_members
 (
@@ -25,7 +25,7 @@ create table if not exists room_members
     has_elevated_permissions bool        not null default false,
     joined_at                timestamptz not null default now(),
     primary key (user_id, room_id)
-);
+    );
 
 -- Insert room owner in room_member when a room is created
 /*
@@ -56,4 +56,4 @@ create table if not exists messages
     author     uuid        not null references users (uuid),
     room       uuid        not null references rooms (uuid),
     created_at timestamptz not null default now()
-);
+    );
