@@ -35,11 +35,13 @@ fn user_card(props: &UserCardProps) -> Html {
 pub struct ShowRoomProps {
     pub room: common::Room,
     pub user_avatar_action: Html,
-    pub onnavigationiconclick: Callback<()>,
+    pub onnavigationiconclick: Option<Callback<()>>,
 }
 
 #[function_component(Room)]
 pub fn show_room(props: &ShowRoomProps) -> Html {
+    let is_on_mobile = props.onnavigationiconclick.is_some();
+
     let (dialog_link, _) = use_state(WeakComponentLink::<MatDialog>::default);
     let (members, set_members) = use_state(Vec::new);
     let room_id = props.room.uuid;
@@ -87,21 +89,32 @@ pub fn show_room(props: &ShowRoomProps) -> Html {
             .collect::<Vec<Html>>(),
     };
 
-    use_effect(|| {
-        let func = js_sys::Function::new_no_args("document.querySelector('mwc-top-app-bar').setAttribute('style', `--mdc-top-app-bar-width: calc(100% - ${document.querySelector('body > mwc-drawer > mwc-list').offsetWidth}px)`)");
-        let _ = func.call0(&yew::utils::window());
+    use_effect(move || {
+        if !is_on_mobile {
+            let func = js_sys::Function::new_no_args("document.querySelector('mwc-top-app-bar').setAttribute('style', `--mdc-top-app-bar-width: calc(100% - ${document.querySelector('body > mwc-drawer > mwc-list').offsetWidth}px)`)");
+            let _ = func.call0(&yew::utils::window());
 
-        yew::utils::window().set_onresize(Some(&func));
+            yew::utils::window().set_onresize(Some(&func));
 
-        || yew::utils::window().set_onresize(None)
+            || yew::utils::window().set_onresize(None)
+        } else { || () }
     });
 
     let nav_icon_clicked = {
         let onnavigationiconclick = props.onnavigationiconclick.clone();
         Callback::from(move |_| {
+            let onnavigationiconclick = onnavigationiconclick.as_ref().unwrap();
             onnavigationiconclick.emit(());
         })
     };
+
+    let nav_icon = if is_on_mobile {
+        html! {
+            <MatTopAppBarNavigationIcon>
+                <MatIconButton icon="menu"></MatIconButton>
+            </MatTopAppBarNavigationIcon>
+        }
+    } else { html!() };
 
     let (invitee_username, set_invitee_username) = use_state(String::new);
     let (invite_dialog_link, _) = use_state(WeakComponentLink::<MatDialog>::default);
@@ -138,9 +151,7 @@ pub fn show_room(props: &ShowRoomProps) -> Html {
     html! {<>
         <MatTopAppBar
             onnavigationiconclick=nav_icon_clicked>
-            <MatTopAppBarNavigationIcon>
-                <MatIconButton icon="menu"></MatIconButton>
-            </MatTopAppBarNavigationIcon>
+            { nav_icon }
 
             <MatTopAppBarTitle>
                 <span class="room-name" onclick=room_name_click>

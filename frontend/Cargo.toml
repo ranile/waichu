@@ -26,8 +26,8 @@ yew-material = { git = "https://github.com/hamza1311/yew-material/", features = 
 
 common = { path = "../common" }
 
-[profile.release]
-panic = 'abort'
-codegen-units = 1
-opt-level = 'z' # todo check if 's' is smaller
-lto = true
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    "MediaQueryList",
+]

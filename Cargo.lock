@@ -562,6 +562,7 @@ dependencies = [
  "uuid",
  "wasm-bindgen",
  "wasm-bindgen-futures",
+ "web-sys",
  "weblog",
  "wee_alloc",
  "yew",

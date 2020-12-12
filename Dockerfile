@@ -12,7 +12,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN trunk --config frontend/Trunk.toml build frontend/index.html --release --dist /app/dist
+RUN RUSTFLAGS="-C opt-level=z -C panic=abort" trunk --config frontend/Trunk.toml build frontend/index.html --release --dist /app/dist
 RUN cargo build -p backend --release
 
 

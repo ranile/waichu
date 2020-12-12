@@ -1,0 +1,23 @@
+@media (max-width: 600px) {
+    #auth-wrapper-container {
+        #auth-wrapper {
+            width: 95vw;
+
+            .mdc-card {
+                mwc-tab-bar {
+                    width: 100%;
+                }
+
+                mwc-linear-progress {
+                    width: 95vw;
+                }
+
+                .card-content {
+                    mwc-textfield {
+                        width: unset;
+                    }
+                }
+            }
+        }
+    }
+}

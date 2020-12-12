@@ -27,6 +27,7 @@ use yew_material::{MatDrawer, MatDrawerAppContent, MatDrawerTitle, WeakComponent
 use yew_router::agent::RouteRequest;
 use yew_router::prelude::*;
 use yew_state::{SharedHandle, SharedState, SharedStateComponent};
+use crate::utils::use_on_mobile_listener;
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -90,6 +91,9 @@ impl SharedState for HomeProps {
 
 #[function_component(Home)]
 fn home(props: &HomeProps) -> Html {
+    let is_on_mobile = use_on_mobile_listener();
+    console_log!("is_on_mobile", is_on_mobile);
+
     let router = use_ref(RouteAgentDispatcher::<()>::new);
 
     let state = props.handle.state();
@@ -117,11 +121,11 @@ fn home(props: &HomeProps) -> Html {
 
     let (drawer_link, _) = use_state(WeakComponentLink::<MatDrawer>::default);
 
-    let on_nav_click = {
+    let on_nav_click = if is_on_mobile {
         let drawer_link = Rc::clone(&drawer_link);
 
-        Callback::from(move |_| drawer_link.flip_open_state())
-    };
+        Some(Callback::from(move |_| drawer_link.flip_open_state()))
+    } else { None };
 
     let room = if let Some(room) = current {
         html! {
@@ -131,9 +135,11 @@ fn home(props: &HomeProps) -> Html {
         html! { "Nothing selected" }
     };
 
+    let drawer_type = if is_on_mobile { "modal" } else { "" };
+
     html! {
         <MatDrawer
-            drawer_type="modal"
+            drawer_type=drawer_type
             drawer_link=(*drawer_link).clone()
             has_header=true>
 
