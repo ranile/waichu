@@ -1,15 +1,3 @@
-FROM rust as planner
-WORKDIR app
-RUN cargo install cargo-chef
-COPY . .
-RUN cargo chef prepare  --recipe-path recipe.json
-
-FROM rust as cacher
-WORKDIR app
-RUN cargo install cargo-chef
-COPY --from=planner /app/recipe.json recipe.json
-RUN cargo chef cook --release --recipe-path recipe.json
-
 FROM rust:latest as builder
 
 # add wasm32 target, install latest version of trunk, install v0.2.69 of wasm-bindgen-cli
@@ -23,8 +11,6 @@ RUN rustup target add wasm32-unknown-unknown && \
 WORKDIR /app
 
 COPY . .
-COPY --from=cacher /app/target target
-COPY --from=cacher /usr/local/cargo /usr/local/cargo
 
 RUN trunk --config frontend/Trunk.toml build frontend/index.html --release --dist /app/dist
 RUN cargo build -p backend --release
