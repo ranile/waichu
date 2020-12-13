@@ -71,8 +71,12 @@ async fn main() {
                 .allow_headers(vec!["authorization"]),
         );
 
+    let port = env::var("PORT")
+        .map(|it| it.parse().expect("invalid port"))
+        .unwrap_or(9090);
+
     let (addr, server) =
-        warp::serve(routes).bind_with_graceful_shutdown(([0, 0, 0, 0], 9090), async {
+        warp::serve(routes).bind_with_graceful_shutdown(([0, 0, 0, 0], port), async {
             tokio::signal::ctrl_c()
                 .await
                 .expect("failed to install CTRL+C signal handler");
