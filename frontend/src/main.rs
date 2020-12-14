@@ -5,6 +5,7 @@ mod websocket;
 
 use components::{Auth, Room as ShowRoom, RoomsList, UserAvatar};
 
+use crate::utils::use_on_mobile_listener;
 use crate::websocket::{Connection, InternalEventBus, Request, Response};
 use common::websocket::{AuthenticatedPayload, OpCode};
 use common::{Message, Room, User};
@@ -27,7 +28,6 @@ use yew_material::{MatDrawer, MatDrawerAppContent, MatDrawerTitle, WeakComponent
 use yew_router::agent::RouteRequest;
 use yew_router::prelude::*;
 use yew_state::{SharedHandle, SharedState, SharedStateComponent};
-use crate::utils::use_on_mobile_listener;
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -125,7 +125,9 @@ fn home(props: &HomeProps) -> Html {
         let drawer_link = Rc::clone(&drawer_link);
 
         Some(Callback::from(move |_| drawer_link.flip_open_state()))
-    } else { None };
+    } else {
+        None
+    };
 
     let room = if let Some(room) = current {
         html! {

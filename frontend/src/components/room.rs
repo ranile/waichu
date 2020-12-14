@@ -97,7 +97,9 @@ pub fn show_room(props: &ShowRoomProps) -> Html {
             yew::utils::window().set_onresize(Some(&func));
 
             || yew::utils::window().set_onresize(None)
-        } else { || () }
+        } else {
+            || ()
+        }
     });
 
     let nav_icon_clicked = {
@@ -114,7 +116,9 @@ pub fn show_room(props: &ShowRoomProps) -> Html {
                 <MatIconButton icon="menu"></MatIconButton>
             </MatTopAppBarNavigationIcon>
         }
-    } else { html!() };
+    } else {
+        html!()
+    };
 
     let (invitee_username, set_invitee_username) = use_state(String::new);
     let (invite_dialog_link, _) = use_state(WeakComponentLink::<MatDialog>::default);
