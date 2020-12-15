@@ -1,48 +1,11 @@
-mod auth;
-pub mod macros;
-mod routes;
-mod services;
-mod utils;
-mod websocket;
-
-use crate::utils::{error_reply, json_with_status};
-pub use macros::*;
-use sqlx::postgres::PgPoolOptions;
-use sqlx::PgPool;
+use backend::utils::{error_reply, json_with_status, single_page_application, CustomRejection};
+use backend::setup_rejection;
 use std::convert::Infallible;
 use std::env;
 use std::path::PathBuf;
 use warp::http::StatusCode;
-use warp::path::FullPath;
 use warp::{Filter, Rejection};
-
-pub fn setup_logger() -> anyhow::Result<()> {
-    fern::Dispatch::new()
-        .format(|out, message, record| {
-            out.finish(format_args!(
-                "[{}][{}][{}] {}",
-                chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
-                record.target(),
-                record.level(),
-                message
-            ))
-        })
-        .level(log::LevelFilter::Debug)
-        .chain(std::io::stdout())
-        .chain(fern::log_file("output.log")?)
-        .apply()?;
-    Ok(())
-}
-
-async fn setup_database() -> anyhow::Result<PgPool> {
-    let pool = PgPoolOptions::new()
-        .connect(&env::var("DATABASE_URL")?)
-        .await?;
-
-    sqlx::migrate!().run(&pool).await?;
-
-    Ok(pool)
-}
+use backend::{setup_logger, setup_database, routes, websocket, auth};
 
 #[tokio::main]
 async fn main() {
@@ -90,29 +53,12 @@ async fn main() {
     .expect("failed to start server");
 }
 
-fn single_page_application(
-    dist_dir: impl Into<PathBuf>,
-) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
-    let dist_dir = dist_dir.into();
-
-    let index_fallback = warp::path::full()
-        .and(warp::fs::file(dist_dir.join("index.html")))
-        .and_then(|p: FullPath, index| async move {
-            if p.as_str().starts_with("/api") {
-                Err(warp::reject())
-            } else {
-                Ok(index)
-            }
-        });
-    warp::fs::dir(dist_dir).or(index_fallback)
-}
-
 async fn handler(err: Rejection) -> Result<impl warp::Reply, Infallible> {
     if err.is_not_found() {
         return Ok(error_reply(StatusCode::NOT_FOUND, ""));
     }
 
-    if let Some(e) = err.find::<crate::utils::CustomRejection>() {
+    if let Some(e) = err.find::<CustomRejection>() {
         return Ok(json_with_status(
             e.0.status_or_internal_server_error(),
             &e.0,

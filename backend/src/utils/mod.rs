@@ -11,6 +11,6 @@ pub use reply::*;
 use warp::reject::Reject;
 
 #[derive(Debug)]
-pub struct CustomRejection(pub(crate) HttpApiProblem);
+pub struct CustomRejection(pub HttpApiProblem);
 
 impl Reject for CustomRejection {}

@@ -1,6 +1,6 @@
 use crate::auth::jwt::create_jwt;
 use crate::auth::BCRYPT_COST;
-use crate::utils::{json_body, with_db, with_transaction};
+use crate::utils::{json_body, with_db, with_transaction, json_with_status};
 use crate::{bail_if_err, bail_if_err_or_404, services};
 use common::payloads::Credentials;
 use common::User;
@@ -30,7 +30,7 @@ async fn signup(
 
             let token = create_jwt(&user)?;
 
-            Ok(reply::json(&token))
+            Ok(json_with_status(StatusCode::CREATED, &token))
         })
     })
     .await
