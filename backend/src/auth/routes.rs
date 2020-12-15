@@ -1,6 +1,6 @@
 use crate::auth::jwt::create_jwt;
 use crate::auth::BCRYPT_COST;
-use crate::utils::{json_body, with_db, with_transaction, json_with_status};
+use crate::utils::{json_body, json_with_status, with_db, with_transaction};
 use crate::{bail_if_err, bail_if_err_or_404, services};
 use common::payloads::Credentials;
 use common::User;

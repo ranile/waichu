@@ -1,11 +1,11 @@
-use backend::utils::{error_reply, json_with_status, single_page_application, CustomRejection};
 use backend::setup_rejection;
+use backend::utils::{error_reply, json_with_status, single_page_application, CustomRejection};
+use backend::{auth, routes, setup_database, setup_logger, websocket};
 use std::convert::Infallible;
 use std::env;
 use std::path::PathBuf;
 use warp::http::StatusCode;
 use warp::{Filter, Rejection};
-use backend::{setup_logger, setup_database, routes, websocket, auth};
 
 #[tokio::main]
 async fn main() {

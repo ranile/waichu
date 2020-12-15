@@ -1,13 +1,12 @@
+use futures::future::BoxFuture;
 use lazy_static::lazy_static;
-use sqlx::{PgPool};
 use sqlx::postgres::PgPoolOptions;
+use sqlx::PgPool;
 use std::env;
 use tokio::sync::RwLock;
-use futures::future::BoxFuture;
 
 pub async fn setup_test_database() -> anyhow::Result<PgPool> {
     let pool = PgPoolOptions::new()
-
         .connect(&env::var("TEST_DATABASE_URL")?)
         .await?;
 
@@ -16,14 +15,13 @@ pub async fn setup_test_database() -> anyhow::Result<PgPool> {
     Ok(pool)
 }
 
-
 lazy_static! {
     static ref POOL: RwLock<Option<PgPool>> = RwLock::new(None);
 }
 
 pub async fn db<F>(callback: F)
-    where
-        F: FnOnce(PgPool) -> BoxFuture<'static, ()> + 'static + Send + Sync,
+where
+    F: FnOnce(PgPool) -> BoxFuture<'static, ()> + 'static + Send + Sync,
 {
     if POOL.read().await.is_none() {
         let mut pool = POOL.write().await;
@@ -40,4 +38,3 @@ pub async fn db<F>(callback: F)
         .expect("can't delete data");
     tx.commit().await.expect("can't commit delete data")
 }
-

@@ -4,10 +4,10 @@ use common::User;
 use http_api_problem::HttpApiProblem;
 use serde::Deserialize;
 use sqlx::PgPool;
-use warp::http::StatusCode;
-use warp::Filter;
 use std::path::PathBuf;
+use warp::http::StatusCode;
 use warp::path::FullPath;
+use warp::Filter;
 
 pub fn json_body<T: for<'de> Deserialize<'de> + Send>(
 ) -> impl Filter<Extract = (T,), Error = warp::Rejection> + Clone {
