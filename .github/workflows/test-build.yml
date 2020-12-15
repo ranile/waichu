@@ -42,7 +42,7 @@ jobs:
         uses: actions-rs/cargo@v1
         env:
           SQLX_OFFLINE: true
-          DATABASE_URL: postgresql://waichu:password@localhost:5432/waichu
+          TEST_DATABASE_URL: postgresql://waichu:password@localhost:5432/waichu
         with:
           command: test
           args: -p backend

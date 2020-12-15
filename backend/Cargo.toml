@@ -41,3 +41,6 @@ features = [
     "json",
     "migrate",
 ]
+
+[dev-dependencies]
+tokio-test = "0.3"

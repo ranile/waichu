@@ -9,10 +9,6 @@ use sqlx::PgPool;
 use warp::http::StatusCode;
 use warp::{reply, Filter, Reply};
 
-fn hash_password(password: &str) -> anyhow::Result<String> {
-    Ok(bcrypt::hash(password, BCRYPT_COST)?)
-}
-
 fn verify_password(password: &str, hash: &str) -> anyhow::Result<bool> {
     Ok(bcrypt::verify(password, hash)?)
 }
@@ -23,7 +19,7 @@ async fn signup(
 ) -> Result<impl warp::Reply, warp::Rejection> {
     with_transaction(pool, move |transaction| {
         Box::pin(async move {
-            let password = (hash_password(&credentials.password))?;
+            let password = bcrypt::hash(credentials.password, BCRYPT_COST)?;
             let user = User::new(credentials.username, password);
 
             let user = services::user::create(&mut *transaction, user).await?;
