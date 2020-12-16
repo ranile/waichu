@@ -4,13 +4,13 @@ use crate::utils::{
 };
 use crate::{bail_if_err, bail_if_err_or_404, value_or_404};
 use common::payloads::{CreateRoom, JoinMembers};
-use common::{Room, User};
+use common::{Room, RoomMember, User};
 use sqlx::types::Uuid;
 use sqlx::PgPool;
 use warp::http::StatusCode;
 use warp::{Filter, Reply};
 
-pub async fn get_room(
+async fn get_room(
     room_id: Uuid,
     pool: PgPool,
     _: User,
@@ -20,7 +20,7 @@ pub async fn get_room(
     Ok(warp::reply::json(&room).into_response())
 }
 
-pub async fn create_room(
+async fn create_room(
     data: CreateRoom,
     pool: PgPool,
     user: User,
@@ -35,13 +35,13 @@ pub async fn create_room(
             services::room::join(&mut *conn, &room, &user, true).await?;
             println!("joined room");
 
-            Ok(warp::reply::json(&room).into_response())
+            Ok(json_with_status(StatusCode::CREATED, &room))
         })
     })
     .await
 }
 
-pub async fn join_room(
+async fn join_room(
     room: Uuid,
     data: JoinMembers,
     pool: PgPool,
@@ -93,7 +93,7 @@ async fn get_room_members(
 
             let users = services::room::get_room_members(conn, room).await?;
             Ok(if users.is_empty() {
-                warp::reply::with_status("", StatusCode::NO_CONTENT).into_response()
+                json_with_status(StatusCode::NO_CONTENT, &Vec::<RoomMember>::new())
             } else {
                 warp::reply::json(&users).into_response()
             })
@@ -105,27 +105,27 @@ async fn get_room_members(
 pub fn routes(
     db: PgPool,
 ) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
-    let get_room_route = warp::path!("api" / "rooms" / Uuid)
+    let get_room_route = warp::path!("rooms" / Uuid)
         .and(warp::get())
         .and(with_db(db.clone()))
         .and(ensure_authorized(db.clone()))
         .and_then(get_room);
 
-    let create_room_route = warp::path!("api" / "rooms")
+    let create_room_route = warp::path!("rooms")
         .and(warp::post())
         .and(json_body::<CreateRoom>())
         .and(with_db(db.clone()))
         .and(ensure_authorized(db.clone()))
         .and_then(create_room);
 
-    let join_room_route = warp::path!("api" / "rooms" / Uuid / "join")
+    let join_room_route = warp::path!("rooms" / Uuid / "join")
         .and(warp::post())
         .and(json_body::<JoinMembers>())
         .and(with_db(db.clone()))
         .and(ensure_authorized(db.clone()))
         .and_then(join_room);
 
-    let get_room_members_route = warp::path!("api" / "rooms" / Uuid / "members")
+    let get_room_members_route = warp::path!("rooms" / Uuid / "members")
         .and(warp::get())
         .and(with_db(db.clone()))
         .and(ensure_authorized(db))

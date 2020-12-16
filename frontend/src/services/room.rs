@@ -1,6 +1,6 @@
 use crate::services::url;
 use crate::CLIENT as client;
-use common::payloads::{CreateMessagePayload, CreateRoom, JoinMembers};
+use common::payloads::{CreateMessage, CreateRoom, JoinMembers};
 use common::{Message, Room, RoomMember, User};
 use reqwest::header::AUTHORIZATION;
 use uuid::Uuid;
@@ -69,7 +69,7 @@ pub async fn fetch_room_messages(token: &str, room_id: Uuid) -> anyhow::Result<V
 pub async fn send_message(
     token: &str,
     room_id: Uuid,
-    message: &CreateMessagePayload,
+    message: &CreateMessage,
 ) -> anyhow::Result<Message> {
     Ok(client
         .post(&url(&format!("/api/rooms/{}/messages", room_id)))

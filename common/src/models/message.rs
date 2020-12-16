@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Message {
     pub uuid: Uuid,
     pub author: User,
@@ -21,5 +21,11 @@ impl Message {
             room,
             created_at: Utc::now(),
         }
+    }
+}
+
+impl PartialEq for Message {
+    fn eq(&self, other: &Self) -> bool {
+        self.uuid == other.uuid
     }
 }

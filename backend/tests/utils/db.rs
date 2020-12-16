@@ -29,12 +29,14 @@ where
     }
     let pool = POOL.read().await;
     let pool = pool.as_ref().expect("no db -- shouldn't happen");
-    callback(pool.clone()).await;
 
+    // clear database before starting the test
     let mut tx = pool.begin().await.expect("can't acquire pool");
     sqlx::query("TRUNCATE users, rooms, room_members, messages CASCADE;")
         .execute(&mut tx)
         .await
         .expect("can't delete data");
-    tx.commit().await.expect("can't commit delete data")
+    tx.commit().await.expect("can't commit delete data");
+
+    callback(pool.clone()).await;
 }

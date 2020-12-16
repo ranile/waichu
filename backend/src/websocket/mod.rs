@@ -26,7 +26,7 @@ lazy_static! {
 pub fn route(
     pool: PgPool,
 ) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
-    warp::path!("api" / "ws")
+    warp::path!("ws")
         // The `ws()` filter will prepare Websocket handshake...
         .and(warp::ws())
         .and(with_db(pool))

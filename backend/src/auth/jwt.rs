@@ -8,7 +8,6 @@ use sqlx::PgConnection;
 
 const KEY: &[u8; 6] = b"secret";
 
-/// Our claims struct, it needs to derive `Serialize` and/or `Deserialize`
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     pub subject: String,
@@ -35,7 +34,18 @@ pub async fn parse_token(db: &mut PgConnection, token: &str) -> anyhow::Result<O
         &token,
         &DecodingKey::from_secret(KEY),
         &Validation::new(Algorithm::HS512),
-    )?;
+    );
+    let token_data = match token_data {
+        Ok(token_data) => token_data,
+        Err(err) => {
+            use jsonwebtoken::errors::ErrorKind::*;
+            return match err.kind() {
+                InvalidToken | ExpiredSignature | InvalidIssuer | InvalidAudience
+                | InvalidSubject | ImmatureSignature | InvalidAlgorithm => Ok(None),
+                _ => Err(anyhow::Error::from(err)),
+            };
+        }
+    };
 
     let uuid = Uuid::parse_str(&token_data.claims.subject).unwrap();
 

@@ -18,7 +18,7 @@ pub struct CreateRoom {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct CreateMessagePayload {
+pub struct CreateMessage {
     pub content: String,
 }
 

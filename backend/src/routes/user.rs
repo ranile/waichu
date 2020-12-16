@@ -31,17 +31,17 @@ async fn get_me(user: User) -> Result<impl warp::Reply, warp::Rejection> {
 pub fn routes(
     db: PgPool,
 ) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
-    let get_user_route = warp::path!("api" / "users" / Uuid)
+    let get_user_route = warp::path!("users" / Uuid)
         .and(warp::get())
         .and(with_db(db.clone()))
         .and_then(get_user);
 
-    let get_by_username_route = warp::path!("api" / "users" / "by_username" / String)
+    let get_by_username_route = warp::path!("users" / "by_username" / String)
         .and(warp::get())
         .and(with_db(db.clone()))
         .and_then(get_by_username);
 
-    let get_me_route = warp::path!("api" / "users" / "me")
+    let get_me_route = warp::path!("users" / "me")
         .and(warp::get())
         .and(ensure_authorized(db))
         .and_then(get_me);

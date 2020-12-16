@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct User {
     pub uuid: Uuid,
     pub username: String,
@@ -28,5 +28,11 @@ impl User {
             password: "".to_string(),
             created_at: Utc::now(),
         }
+    }
+}
+
+impl PartialEq for User {
+    fn eq(&self, other: &Self) -> bool {
+        self.uuid == other.uuid
     }
 }

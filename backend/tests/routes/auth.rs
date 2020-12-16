@@ -14,7 +14,7 @@ async fn test_signin() {
 
             create_user(&mut conn, username, password).await;
 
-            let api = backend::auth::routes(pool);
+            let api = backend::api(pool);
 
             let resp = request()
                 .method("POST")
@@ -41,6 +41,30 @@ async fn test_signin() {
 }
 
 #[tokio::test]
+async fn test_signin_with_invalid_credentials() {
+    db(|pool| {
+        Box::pin(async {
+            let username = "user";
+            let password = "password";
+
+            let api = backend::api(pool);
+            let resp = request()
+                .method("POST")
+                .path("/api/auth/signin")
+                .json(&Credentials {
+                    username: username.to_string(),
+                    password: password.to_string(),
+                })
+                .reply(&api)
+                .await;
+
+            assert_eq!(resp.status(), StatusCode::UNAUTHORIZED);
+        })
+    })
+    .await
+}
+
+#[tokio::test]
 async fn test_signup() {
     db(|pool| {
         Box::pin(async {
@@ -48,7 +72,7 @@ async fn test_signup() {
             let username = "user";
             let password = "password";
 
-            let api = backend::auth::routes(pool);
+            let api = backend::api(pool);
 
             let resp = request()
                 .method("POST")

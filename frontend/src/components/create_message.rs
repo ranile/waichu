@@ -1,6 +1,6 @@
 use crate::services::room::send_message;
 use crate::utils::use_token;
-use common::payloads::CreateMessagePayload;
+use common::payloads::CreateMessage;
 use common::Room;
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
@@ -34,7 +34,7 @@ pub fn create_message(props: &CreateMessageProps) -> Html {
                 let result = send_message(
                     &*token,
                     room_id,
-                    &CreateMessagePayload {
+                    &CreateMessage {
                         content: (*message).clone(),
                     },
                 )
