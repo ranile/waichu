@@ -8,12 +8,13 @@ pub mod websocket;
 
 pub use macros::*;
 
-use crate::utils::{error_reply, json_with_status, CustomRejection};
+use crate::utils::error_reply;
+use common::errors::ApiError;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use std::env;
 use warp::http::StatusCode;
-use warp::{Filter, Rejection};
+use warp::{Filter, Rejection, Reply};
 
 pub fn setup_logger() -> anyhow::Result<()> {
     fern::Dispatch::new()
@@ -62,11 +63,8 @@ async fn handler(err: Rejection) -> Result<impl warp::Reply, Rejection> {
         return Ok(error_reply(StatusCode::NOT_FOUND, ""));
     }
 
-    if let Some(e) = err.find::<CustomRejection>() {
-        return Ok(json_with_status(
-            e.0.status_or_internal_server_error(),
-            &e.0,
-        ));
+    if let Some(e) = err.find::<ApiError>() {
+        return Ok(e.clone().into_response());
     }
 
     let mut code = StatusCode::INTERNAL_SERVER_ERROR;

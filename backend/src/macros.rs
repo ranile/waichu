@@ -19,7 +19,7 @@ macro_rules! bail_if_err {
     ($res:expr) => {{
         let result = $res
             .map_err(crate::utils::from_anyhow)
-            .map_err(|p| crate::utils::problem_to_reply(p).into_response());
+            .map_err(|e| e.into_response());
 
         match result {
             Ok(value) => value,

@@ -27,7 +27,7 @@ pub fn create_message(props: &CreateMessageProps) -> Html {
         Callback::from(move |_| {
             let message = Rc::clone(&message);
             if message.is_empty() {
-                return
+                return;
             }
 
             let token = Rc::clone(&token);

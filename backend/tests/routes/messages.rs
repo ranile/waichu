@@ -145,5 +145,5 @@ async fn test_create_blank_message_fails() {
             assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
         })
     })
-        .await
+    .await
 }

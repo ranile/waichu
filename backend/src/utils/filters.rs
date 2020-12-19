@@ -1,7 +1,6 @@
 use crate::auth::parse_token;
-use crate::utils::CustomRejection;
+use common::errors::ApiError;
 use common::User;
-use http_api_problem::HttpApiProblem;
 use serde::Deserialize;
 use sqlx::PgPool;
 use std::path::PathBuf;
@@ -28,24 +27,19 @@ pub fn ensure_authorized(
         .and(with_db(pool))
         .and_then(|token: String, db: PgPool| async move {
             let mut conn = db.acquire().await.map_err(|_e| {
-                warp::reject::custom(CustomRejection(
-                    HttpApiProblem::new("failed to acquire pool")
-                        .set_status(StatusCode::INTERNAL_SERVER_ERROR),
-                ))
+                ApiError::new_with_message("failed to acquire pool").into_rejection()
             })?;
 
-            let user = parse_token(&mut conn, &token).await.map_err(|e| {
-                warp::reject::custom(CustomRejection(
-                    HttpApiProblem::new(e.to_string())
-                        .set_status(StatusCode::INTERNAL_SERVER_ERROR),
-                ))
-            })?;
+            let user = parse_token(&mut conn, &token)
+                .await
+                .map_err(|e| ApiError::new_with_message(&e.to_string()).into_rejection())?;
 
             let user = match user {
                 Some(user) => user,
                 None => {
-                    return Err(warp::reject::custom(CustomRejection(
-                        HttpApiProblem::new("Invalid token").set_status(StatusCode::UNAUTHORIZED),
+                    return Err(warp::reject::custom(ApiError::new_with_message_and_status(
+                        "invalid token",
+                        StatusCode::UNAUTHORIZED,
                     )));
                 }
             };

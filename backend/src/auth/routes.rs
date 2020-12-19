@@ -1,7 +1,9 @@
 use crate::auth::jwt::create_jwt;
 use crate::auth::BCRYPT_COST;
+use crate::services::user::UserAlreadyExists;
 use crate::utils::{json_body, json_with_status, with_db, with_transaction};
 use crate::{bail_if_err, services};
+use common::errors::ApiError;
 use common::payloads::Credentials;
 use common::User;
 use http_api_problem::HttpApiProblem;
@@ -22,7 +24,21 @@ async fn signup(
             let password = bcrypt::hash(credentials.password, BCRYPT_COST)?;
             let user = User::new(credentials.username, password);
 
-            let user = services::user::create(&mut *transaction, user).await?;
+            let user = services::user::create(&mut *transaction, user).await;
+
+            let user = match user {
+                Ok(user) => user,
+                Err(err) => {
+                    let api_error = match err.downcast::<UserAlreadyExists>() {
+                        Ok(username) => ApiError::new_with_message_and_status(
+                            &username.to_string(),
+                            StatusCode::BAD_REQUEST,
+                        ),
+                        Err(e) => ApiError::new_with_message(&e.to_string()),
+                    };
+                    return Ok(api_error.into_response());
+                }
+            };
 
             let token = create_jwt(&user)?;
 

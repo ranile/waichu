@@ -97,3 +97,31 @@ async fn test_signup() {
     })
     .await
 }
+
+#[tokio::test]
+async fn test_signup_exiting_username() {
+    db(|pool| {
+        Box::pin(async {
+            let mut conn = pool.acquire().await.expect("can't acquire pool");
+            let username = "user";
+            let password = "password";
+
+            create_user(&mut conn, username, password).await;
+
+            let api = backend::api(pool);
+
+            let resp = request()
+                .method("POST")
+                .path("/api/auth/signup")
+                .json(&Credentials {
+                    username: username.to_string(),
+                    password: password.to_string(),
+                })
+                .reply(&api)
+                .await;
+
+            assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
+        })
+    })
+    .await
+}
