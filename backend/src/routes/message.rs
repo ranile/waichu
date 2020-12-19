@@ -18,6 +18,9 @@ async fn create_message(
 ) -> Result<impl warp::Reply, warp::Rejection> {
     with_transaction(pool, move |conn| {
         Box::pin(async move {
+            if data.content.is_empty() {
+                return Ok(error_reply(StatusCode::BAD_REQUEST, "message content can't be empty"))
+            }
             let room = value_or_404!(services::room::get(conn, room_id).await?);
             if !services::room::user_in_room(conn, &room, &user).await? {
                 return Ok(error_reply(

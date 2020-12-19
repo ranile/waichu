@@ -109,6 +109,7 @@ pub fn signin_comp(handle: &SharedHandle<AppState>) -> Html {
 
                 <MatFormfield label="Remember me?">
                     <MatCheckbox
+                        disabled=*has_sent_request
                         onchange=Callback::from(move |state| set_remember_me(state))
                     />
                 </MatFormfield>

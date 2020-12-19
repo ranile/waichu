@@ -25,8 +25,12 @@ pub fn create_message(props: &CreateMessageProps) -> Html {
         let room_id = props.room.uuid;
 
         Callback::from(move |_| {
-            let token = Rc::clone(&token);
             let message = Rc::clone(&message);
+            if message.is_empty() {
+                return
+            }
+
+            let token = Rc::clone(&token);
             let set_message = Rc::clone(&set_message);
             let set_error = Rc::clone(&set_error);
 

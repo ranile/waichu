@@ -120,3 +120,30 @@ async fn test_create_messages() {
     })
     .await
 }
+
+#[tokio::test]
+async fn test_create_blank_message_fails() {
+    db(|pool| {
+        Box::pin(async {
+            let mut conn = pool.acquire().await.expect("can't acquire pool");
+
+            let (user, token) = create_authenticated_user(&mut conn, "user", "password").await;
+            let (room, _) = create_room_with_user(&mut conn, "room_name", &user, false).await;
+            let message_content = "".to_string();
+
+            let api = backend::api(pool);
+            let resp = request()
+                .method("POST")
+                .path(&format!("/api/rooms/{}/messages", room.uuid))
+                .header("Authorization", token)
+                .json(&CreateMessage {
+                    content: message_content.clone(),
+                })
+                .reply(&api)
+                .await;
+
+            assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
+        })
+    })
+        .await
+}
