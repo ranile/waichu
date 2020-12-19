@@ -9,7 +9,6 @@ use wasm_bindgen_futures::spawn_local;
 use weblog::console_log;
 use yew::prelude::*;
 use yew_functional::{function_component, use_effect, use_effect_with_deps, use_state};
-use yew_material::MatList;
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct MessagesProps {
@@ -33,7 +32,7 @@ pub fn show_room_messages(props: &MessagesProps) -> Html {
                     match fetch_room_messages(&*token, room_id).await {
                         Ok(mut messages) => {
                             messages
-                                .sort_by(|a, b| a.created_at.partial_cmp(&b.created_at).unwrap());
+                                .sort_by(|a, b| b.created_at.partial_cmp(&a.created_at).unwrap());
                             set_messages(messages);
                         }
                         Err(e) => set_error(Some(e)),
@@ -59,7 +58,7 @@ pub fn show_room_messages(props: &MessagesProps) -> Html {
                         weblog::console_log!("logging new message", msg.uuid.to_string());
                         let mut messages = (*messages).clone();
                         messages.push((*msg).clone());
-                        messages.sort_by(|a, b| a.created_at.partial_cmp(&b.created_at).unwrap());
+                        messages.sort_by(|a, b| b.created_at.partial_cmp(&a.created_at).unwrap());
                         set_messages(messages)
                     }
                 }
@@ -71,11 +70,6 @@ pub fn show_room_messages(props: &MessagesProps) -> Html {
 
     let messages = messages.iter().map(|message| {
         html! { <>
-        // <MatListItem twoline=true graphic=GraphicType::Avatar key=message.uuid.to_string()>
-        //     <mwc-icon slot="graphic">{"folder"}</mwc-icon>
-        //     <span>{ &message.author.username }</span>
-        //     <span slot="secondary">{ &message.content }</span>
-        // </MatListItem>
         <SingleMessage message=message />
         </>}
     });
@@ -83,9 +77,9 @@ pub fn show_room_messages(props: &MessagesProps) -> Html {
     let list = match &*error {
         Some(e) => html!(e.to_string()),
         None => html! {
-            <MatList noninteractive=true>
-                { for messages }
-            </MatList>
+            // <MatList noninteractive=true>
+            { for messages }
+            // </MatList>
         },
     };
 

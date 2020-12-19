@@ -53,9 +53,8 @@ pub fn api(pool: PgPool) -> impl Filter<Extract = (impl warp::Reply,), Error = R
     let user = routes::user::routes(pool.clone());
     let message = routes::message::routes(pool);
 
-    let api = balanced_or_tree!(hello, auth, websocket, room, user, message);
-
-    prefix.and(api).recover(handler)
+    let api = balanced_or_tree!(hello, auth, websocket, room, user, message).recover(handler);
+    prefix.and(api)
 }
 
 async fn handler(err: Rejection) -> Result<impl warp::Reply, Rejection> {

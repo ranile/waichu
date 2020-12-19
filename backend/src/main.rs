@@ -1,7 +1,6 @@
 use backend::utils::single_page_application;
 use backend::{setup_database, setup_logger};
 use std::env;
-use std::path::PathBuf;
 use warp::Filter;
 
 #[tokio::main]
@@ -13,7 +12,7 @@ async fn main() {
     let dist_dir = env::var("DIST_DIR").expect("`DIST_DIR` isn't set");
 
     let routes = backend::api(pool.clone())
-        .or(single_page_application(PathBuf::from(&dist_dir)))
+        .or(single_page_application(dist_dir))
         .with(warp::compression::gzip());
 
     #[cfg(debug_assertions)]

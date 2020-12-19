@@ -564,11 +564,12 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "weblog",
+ "weblog 0.4.0-beta.1",
  "wee_alloc",
  "yew",
  "yew-functional",
  "yew-material",
+ "yew-md",
  "yew-router",
  "yew-state",
 ]
@@ -713,6 +714,15 @@ checksum = "501466ecc8a30d1d3b7fc9229b122b2ce8ed6e9d9223f1138d4babb253e51817"
 dependencies = [
  "typenum",
  "version_check",
+]
+
+[[package]]
+name = "getopts"
+version = "0.2.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14dbbfd5c71d70241ecf9e6f13737f7b5ce823821063188d7e46c41d371eebd5"
+dependencies = [
+ "unicode-width",
 ]
 
 [[package]]
@@ -1540,6 +1550,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e0704ee1a7e00d7bb417d0770ea303c1bccbabf0ef1667dae92b5967f5f8a71"
 dependencies = [
  "unicode-xid",
+]
+
+[[package]]
+name = "pulldown-cmark"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ffade02495f22453cd593159ea2f59827aae7f53fa8323f756799b670881dcf8"
+dependencies = [
+ "bitflags",
+ "getopts",
+ "memchr",
+ "unicase",
 ]
 
 [[package]]
@@ -2460,6 +2482,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb0d2e7be6ae3a5fa87eed5fb451aff96f2573d2694942e40543ae0bbe19c796"
 
 [[package]]
+name = "unicode-width"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9337591893a19b88d8d87f2cec1e73fad5cdfd10e5a6f349f498ad6ea2ffb1e3"
+
+[[package]]
 name = "unicode-xid"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2678,13 +2706,35 @@ dependencies = [
 
 [[package]]
 name = "weblog"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6eec0958e0181982bc8b4577b1363f21300a670603615c58643f172c92c47357"
+dependencies = [
+ "wasm-bindgen",
+ "web-sys",
+ "weblog-proc-macro 0.3.0",
+]
+
+[[package]]
+name = "weblog"
 version = "0.4.0-beta.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49541462ed3020254549ef0da2e56a52883043fba54cf13f024e12f0e121c873"
 dependencies = [
  "wasm-bindgen",
  "web-sys",
- "weblog-proc-macro",
+ "weblog-proc-macro 0.4.0-beta.1",
+]
+
+[[package]]
+name = "weblog-proc-macro"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9d9abb8ee84ede5408a346721d72fb216a27f53a539ff3c83ed1bf7625af7104"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -2862,6 +2912,19 @@ dependencies = [
  "paste",
  "wasm-bindgen",
  "web-sys",
+ "yew",
+]
+
+[[package]]
+name = "yew-md"
+version = "0.1.0"
+source = "git+https://github.com/hamza1311/yew-md?branch=master-yew#f51fc003f0321d73a4c8359302843480c9c91416"
+dependencies = [
+ "js-sys",
+ "pulldown-cmark",
+ "wasm-bindgen",
+ "web-sys",
+ "weblog 0.3.0",
  "yew",
 ]
 

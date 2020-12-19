@@ -132,48 +132,44 @@ mwc-dialog {
 }
 
 .message-card {
-    --mdc-typography-body2-font-size: 0.95em;
+//    --mdc-typography-body2-font-size: 0.95em;
+//
+//    mwc-list-item {
+//        mwc-icon {
+//            padding-right: 0.5em;
+//        }
+//
+//        span {
+//            font-size: 1.1em;
+//            color: var(--mdc-theme-text-primary-on-background);
+//        }
+//
+//        span[slot="secondary"] {
+//            font-size: 1em;
+//            color: var(--mdc-theme-text-primary-on-background);
+//        }
+//    }
 
-    mwc-list-item {
-        mwc-icon {
-            padding-right: 0.5em;
-        }
+    display: flex;
+    gap: 1em;
 
-        span {
+    .content-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3em;
+
+        .author {
+            font-weight: 500;
             font-size: 1.1em;
-            color: var(--mdc-theme-text-primary-on-background);
-        }
-
-        span[slot="secondary"] {
-            font-size: 1em;
-            color: var(--mdc-theme-text-primary-on-background);
         }
     }
-
-    //display: flex;
-    //gap: 1em;
-    //
-    //.content-container {
-    //    display: flex;
-    //    flex-direction: column;
-    //    gap: 0.3em;
-    //
-    //    .author {
-    //        font-weight: 500;
-    //        font-size: 1.1em;
-    //    }
-    //}
 }
 
-//.message-card:last-child {
-//    padding-top: 1em;
-//}
-//
-//.message-card:hover {
-//    background-color: rgba(255, 255, 255, 0.1);
-//    border-radius: 16px;
-//    margin-right: 1em;
-//}
+.message-card:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    margin-right: 1em;
+}
 
 .new-message-form-container {
     padding: 1em 1em 0;

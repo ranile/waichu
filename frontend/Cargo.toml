@@ -23,7 +23,7 @@ wee_alloc = "0.4"
 
 yew-material = { git = "https://github.com/hamza1311/yew-material/", features = ["full"] }
 #yew-material = { path = "../../yew-material/yew-material", features = ["full"] }
-
+yew-md = { git = "https://github.com/hamza1311/yew-md", branch = "master-yew" }
 common = { path = "../common" }
 
 [dependencies.web-sys]
