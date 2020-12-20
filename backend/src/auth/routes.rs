@@ -6,7 +6,6 @@ use crate::{bail_if_err, services};
 use common::errors::ApiError;
 use common::payloads::Credentials;
 use common::User;
-use http_api_problem::HttpApiProblem;
 use sqlx::PgPool;
 use warp::http::StatusCode;
 use warp::{reply, Filter, Reply};
@@ -30,8 +29,8 @@ async fn signup(
                 Ok(user) => user,
                 Err(err) => {
                     let api_error = match err.downcast::<UserAlreadyExists>() {
-                        Ok(username) => ApiError::new_with_message_and_status(
-                            &username.to_string(),
+                        Ok(error) => ApiError::new_with_message_and_status(
+                            &error.to_string(),
                             StatusCode::BAD_REQUEST,
                         ),
                         Err(e) => ApiError::new_with_message(&e.to_string()),
@@ -59,11 +58,11 @@ async fn signin(
     let user = match user {
         Some(user) => user,
         None => {
-            let status = StatusCode::UNAUTHORIZED;
-            return Ok(json_with_status(
-                status,
-                &HttpApiProblem::new("Invalid username or password").set_status(status),
-            ));
+            return Ok(ApiError::new_with_message_and_status(
+                "invalid username or password",
+                StatusCode::UNAUTHORIZED,
+            )
+            .into_response());
         }
     };
 
@@ -73,11 +72,11 @@ async fn signin(
 
             reply::json(&token).into_response()
         } else {
-            let status = StatusCode::UNAUTHORIZED;
-            json_with_status(
-                status,
-                &HttpApiProblem::new("Invalid username or password").set_status(status),
+            ApiError::new_with_message_and_status(
+                "invalid username or password",
+                StatusCode::UNAUTHORIZED,
             )
+            .into_response()
         },
     )
 }

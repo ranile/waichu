@@ -110,7 +110,6 @@ dependencies = [
  "common",
  "fern",
  "futures",
- "http-api-problem",
  "jsonwebtoken",
  "lazy_static",
  "log",
@@ -929,18 +928,6 @@ dependencies = [
  "bytes",
  "fnv",
  "itoa",
-]
-
-[[package]]
-name = "http-api-problem"
-version = "0.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4760c8ea7ae413a5e4d122c83beb37ae0baf9b978af55dc8a161b7fd5fcd6458"
-dependencies = [
- "http",
- "serde",
- "serde_json",
- "warp",
 ]
 
 [[package]]

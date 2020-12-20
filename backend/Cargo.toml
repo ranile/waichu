@@ -22,8 +22,6 @@ jsonwebtoken = "7.2"
 
 chrono = "0.4"
 
-http-api-problem = { version = "0.17", features = ["with-warp"] }
-
 lazy_static = "1.4"
 
 common = { path = "../common" }

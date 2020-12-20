@@ -1,6 +1,3 @@
-pub const ANYHOW_RESULT_TYPE_NAME: &str = "anyhow::Error>";
-pub const RESULT_TYPE_NAME: &str = "core::result::Result";
-
 #[macro_export]
 macro_rules! setup_rejection {
     ($err:ident $code_ident: ident $message: ident $($path:path, $code:expr);*) => {
@@ -34,19 +31,16 @@ macro_rules! value_or_404 {
         match $expr {
             Some(value) => value,
             None => {
-                return Ok(warp::reply::with_status(
-                    warp::reply::json(
-                        &http_api_problem::HttpApiProblem::new($message)
-                            .set_status(warp::http::StatusCode::NOT_FOUND),
-                    ),
-                    warp::http::StatusCode::NOT_FOUND,
+                return Ok(::common::errors::ApiError::new_with_message_and_status(
+                    $message,
+                    ::warp::http::StatusCode::NOT_FOUND,
                 )
                 .into_response())
             }
         }
     }};
     ($expr:expr) => {{
-        crate::value_or_404!($expr, "Requested resource not found")
+        crate::value_or_404!($expr, "requested resource was not found")
     }};
 }
 
