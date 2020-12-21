@@ -119,6 +119,7 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
+          context: .
           file: Dockerfile.workflow
           push: true
           tags: ghcr.io/hamza1311/waichu:latest
