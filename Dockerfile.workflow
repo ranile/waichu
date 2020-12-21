@@ -1,7 +1,7 @@
 FROM gcr.io/distroless/cc
 
-COPY target/release/backend /
-COPY dist /static
+COPY ./target/x86_64-unknown-linux-musl/release/backend /
+COPY ./dist /static
 
 ENV DIST_DIR="/static"
 
