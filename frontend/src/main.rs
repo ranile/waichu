@@ -24,7 +24,7 @@ use yew::services::StorageService;
 use yew_functional::{
     function_component, use_effect, use_effect_with_deps, use_ref, use_state, ContextProvider,
 };
-use yew_material::{MatDrawer, MatDrawerAppContent, MatDrawerTitle, WeakComponentLink};
+use yew_material::{MatDrawer, MatDrawerAppContent, WeakComponentLink};
 use yew_router::agent::RouteRequest;
 use yew_router::prelude::*;
 use yew_state::{SharedHandle, SharedState, SharedStateComponent};

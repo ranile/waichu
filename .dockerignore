@@ -1,6 +1,7 @@
 .git/
 .github/
 .idea/
-dist
 target
 *.log
+
+!/target/release/backend

@@ -2,6 +2,8 @@ name: Lint & Format
 on:
   push:
     branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   fmt:
