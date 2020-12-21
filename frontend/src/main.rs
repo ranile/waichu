@@ -279,9 +279,20 @@ fn main_application(handle: &SharedHandle<AppState>) -> Html {
         Some(_) => {
             if !*has_sent_connect {
                 let base = yew::utils::window().location().host().unwrap();
+                let protocol = yew::utils::window().location().protocol().unwrap();
+
+                let ws_protocol = if protocol.starts_with("https") {
+                    "wss"
+                } else {
+                    "ws"
+                };
+
                 dispatcher
                     .borrow_mut()
-                    .send(websocket::Request::Connect(format!("ws://{}/api/ws", base)));
+                    .send(websocket::Request::Connect(format!(
+                        "{}://{}/api/ws",
+                        ws_protocol, base
+                    )));
                 set_has_sent_connect(true)
             }
         }
