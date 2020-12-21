@@ -42,21 +42,35 @@ pub struct AppState {
     rooms: Rc<RefCell<Vec<Room>>>,
     me: Option<User>,
     force_render: u32,
+    prefers_dark: bool,
 }
 
 const TOKEN_KEY: &str = "token";
+const PREFERS_DARK_KEY: &str = "token";
 
 impl Default for AppState {
     fn default() -> Self {
         let service = StorageService::new(Area::Local).expect("can't initialize StorageService");
 
         let token = service.restore::<Text>(TOKEN_KEY).ok();
+        let prefers_dark = service
+            .restore::<Text>(PREFERS_DARK_KEY)
+            .map(|_| true)
+            .unwrap_or_else(|_| {
+                let media = yew::utils::window()
+                    .match_media("(prefers-color-scheme: dark)")
+                    .unwrap()
+                    .unwrap();
+                console_log!(&media);
+                media.matches()
+            });
 
         Self {
             token,
             rooms: Rc::new(RefCell::new(vec![])),
             me: None,
             force_render: 0,
+            prefers_dark,
         }
     }
 }
@@ -142,12 +156,14 @@ fn home(props: &HomeProps) -> Html {
     html! {
         <MatDrawer
             drawer_type=drawer_type
-            drawer_link=(*drawer_link).clone()
-            has_header=true>
+            drawer_link=(*drawer_link).clone()>
+            // has_header=true>
 
-            <MatDrawerTitle>{"Rooms"}</MatDrawerTitle>
+            <div id="drawer-sidebar">
+                <h2>{"Rooms"}</h2>
 
-            <SharedStateComponent<RoomsList> />
+                <SharedStateComponent<RoomsList> />
+            </div>
 
             <MatDrawerAppContent>
                 { room }
@@ -158,6 +174,18 @@ fn home(props: &HomeProps) -> Html {
 
 #[function_component(Main)]
 fn main_application(handle: &SharedHandle<AppState>) -> Html {
+    let theme = if handle.state().prefers_dark {
+        "dark"
+    } else {
+        "default"
+    };
+
+    yew::utils::document()
+        .body()
+        .unwrap()
+        .set_attribute("data-theme", theme)
+        .expect("failed to set theme attribute");
+
     let (has_sent_connect, set_has_sent_connect) = use_state(|| false);
     let (has_authenticated, set_has_authenticated) = use_state(|| false);
 

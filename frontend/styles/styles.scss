@@ -2,10 +2,12 @@
     margin: 0;
 }
 
-:root {
+body[data-theme=default] {
     --mdc-theme-primary: #3f51b5;
     --mdc-theme-text-primary-on-background: rgba(0, 0, 0, 0.87);
-    --mdc-theme-error: #b00020
+    --mdc-theme-error: #b00020;
+
+    --hover-color: rgba(0, 0, 0, 0.1);
 }
 
 mwc-drawer {
@@ -73,11 +75,28 @@ mwc-dialog {
             }
 
             .mdc-card__action-buttons {
+                width: 20vw;
                 padding: 1em 0 2em 0;
+                justify-content: center;
+
+                .separator {
+                    flex: 1;
+                }
             }
         }
     }
 }
+
+#drawer-sidebar {
+    $padding-top: 1em;
+    height: calc(100% - #{$padding-top});
+    padding-top: $padding-top;
+
+    h2 {
+        padding-left: 0.75em;
+    }
+}
+
 
 .room-name {
     cursor: pointer;
@@ -90,7 +109,7 @@ mwc-dialog {
     display: flex;
     flex-direction: column;
 
-    padding: 0 0 1em 1em;
+    padding: 0 0 1em 2em;
 }
 
 .room-info {
@@ -151,7 +170,7 @@ mwc-dialog {
 //    }
 
     display: flex;
-    gap: 1em;
+    gap: 0.4em;
 
     .content-container {
         display: flex;
@@ -163,16 +182,16 @@ mwc-dialog {
             font-size: 1.1em;
         }
     }
-}
 
-.message-card:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    margin-right: 1em;
+    &:hover {
+        background-color: var(--hover-color);
+        border-radius: 16px;
+        margin-right: 1em;
+    }
 }
 
 .new-message-form-container {
-    padding: 1em 1em 0;
+    padding: 1em 1em 0 0;
 
     display: flex;
     align-items: center;

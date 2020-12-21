@@ -84,45 +84,42 @@ pub fn signin_comp(handle: &SharedHandle<AppState>) -> Html {
     };
 
     html! {<>
-        // <div class="mdc-card">
-            {progress_bar}
+        { progress_bar }
 
-            <div class="card-content">
-                <MatTextField
-                    outlined=true
-                    required=true
+        <div class="card-content">
+            <MatTextField
+                outlined=true
+                required=true
+                disabled=*has_sent_request
+                field_type=TextFieldType::Text
+                label="Username"
+                oninput=Callback::from(move |e: InputData| set_username(e.value))
+            />
+
+            <MatTextField
+                outlined=true
+                required=true
+                disabled=*has_sent_request
+                field_type=TextFieldType::Password
+                label="Password"
+                oninput=Callback::from(move |e: InputData| set_password(e.value))
+             />
+
+             { error_html }
+        </div>
+
+        <div class="mdc-card__action-buttons">
+            <MatFormfield label="Remember me?">
+                <MatCheckbox
                     disabled=*has_sent_request
-                    field_type=TextFieldType::Text
-                    label="Username"
-                    oninput=Callback::from(move |e: InputData| set_username(e.value))
+                    onchange=Callback::from(move |state| set_remember_me(state))
                 />
-
-                <MatTextField
-                    outlined=true
-                    required=true
-                    disabled=*has_sent_request
-                    field_type=TextFieldType::Password
-                    label="Password"
-                    oninput=Callback::from(move |e: InputData| set_password(e.value))
-                 />
-
-
-                <MatFormfield label="Remember me?">
-                    <MatCheckbox
-                        disabled=*has_sent_request
-                        onchange=Callback::from(move |state| set_remember_me(state))
-                    />
-                </MatFormfield>
-
-                 {error_html}
-            </div>
-
-            <div class="mdc-card__action-buttons">
-                <span onclick=onclick>
-                    <MatButton raised=true label="Sign in" disabled=*has_sent_request />
-                </span>
-            </div>
-        // </div>
+            </MatFormfield>
+            <div class="separator" />
+            <span onclick=onclick>
+                <MatButton raised=true label="Sign in" disabled=*has_sent_request />
+            </span>
+        </div>
     </>}
 }
 
@@ -193,46 +190,44 @@ pub fn signup_comp(handle: &SharedHandle<AppState>) -> Html {
     };
 
     html! {<>
-        // <div class="mdc-card">
-            {progress_bar}
+        {progress_bar}
 
-            <div class="card-content">
-                <MatTextField
-                    outlined=true
-                    required=true
-                    disabled=*has_sent_request
-                    field_type=TextFieldType::Text
-                    label="Username"
-                    oninput=Callback::from(move |e: InputData| set_username(e.value))
-                />
+        <div class="card-content">
+            <MatTextField
+                outlined=true
+                required=true
+                disabled=*has_sent_request
+                field_type=TextFieldType::Text
+                label="Username"
+                oninput=Callback::from(move |e: InputData| set_username(e.value))
+            />
 
-                <MatTextField
-                    outlined=true
-                    required=true
-                    disabled=*has_sent_request
-                    field_type=TextFieldType::Password
-                    label="Password"
-                    oninput=Callback::from(move |e: InputData| set_password(e.value))
-                 />
+            <MatTextField
+                outlined=true
+                required=true
+                disabled=*has_sent_request
+                field_type=TextFieldType::Password
+                label="Password"
+                oninput=Callback::from(move |e: InputData| set_password(e.value))
+             />
 
-                <MatTextField
-                    outlined=true
-                    required=true
-                    disabled=*has_sent_request
-                    field_type=TextFieldType::Password
-                    label="Confirm password"
-                    oninput=Callback::from(move |e: InputData| set_confirm_password(e.value))
-                />
+            <MatTextField
+                outlined=true
+                required=true
+                disabled=*has_sent_request
+                field_type=TextFieldType::Password
+                label="Confirm password"
+                oninput=Callback::from(move |e: InputData| set_confirm_password(e.value))
+            />
 
-                 {error_html}
-            </div>
+             {error_html}
+        </div>
 
-            <div class="mdc-card__action-buttons">
-                <span onclick=onclick>
-                    <MatButton raised=true label="Sign up" disabled=*has_sent_request />
-                </span>
-            </div>
-        // </div>
+        <div class="mdc-card__action-buttons">
+            <span onclick=onclick>
+                <MatButton raised=true label="Sign up" disabled=*has_sent_request />
+            </span>
+        </div>
     </>}
 }
 

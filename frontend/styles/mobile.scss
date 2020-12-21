@@ -17,6 +17,10 @@
                         width: unset;
                     }
                 }
+                .mdc-card__action-buttons {
+                    flex-direction: column;
+                    width: unset;
+                }
             }
         }
     }

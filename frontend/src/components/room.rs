@@ -91,7 +91,7 @@ pub fn show_room(props: &ShowRoomProps) -> Html {
 
     use_effect(move || {
         if !is_on_mobile {
-            let func = js_sys::Function::new_no_args("document.querySelector('mwc-top-app-bar').setAttribute('style', `--mdc-top-app-bar-width: calc(100% - ${document.querySelector('body > mwc-drawer > mwc-list').offsetWidth}px)`)");
+            let func = js_sys::Function::new_no_args("document.querySelector('mwc-top-app-bar').setAttribute('style', `--mdc-top-app-bar-width: calc(100% - ${document.querySelector('#drawer-sidebar').offsetWidth}px)`)");
             let _ = func.call0(&yew::utils::window());
 
             yew::utils::window().set_onresize(Some(&func));
