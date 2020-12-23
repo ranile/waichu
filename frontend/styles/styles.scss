@@ -177,9 +177,19 @@ mwc-dialog {
         flex-direction: column;
         gap: 0.3em;
 
-        .author {
-            font-weight: 500;
-            font-size: 1.1em;
+        section {
+            display: flex;
+            gap: 0.65em;
+            align-items: flex-end;
+
+            .author {
+                font-weight: 500;
+                font-size: 1.1em;
+            }
+
+            .timestamp {
+                font-size: 0.77em;
+            }
         }
     }
 

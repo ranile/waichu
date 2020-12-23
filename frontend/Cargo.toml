@@ -20,6 +20,7 @@ js-sys = "0.3"
 yew-state = { git = "https://github.com/hamza1311/yew-state/", branch = "master-yew" }
 lazy_static = "1.4"
 wee_alloc = "0.4"
+chrono = { version = "0.4", features = ["serde", "wasmbind"] }
 
 yew-material = { git = "https://github.com/hamza1311/yew-material/", features = ["full"] }
 #yew-material = { path = "../../yew-material/yew-material", features = ["full"] }

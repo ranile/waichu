@@ -61,7 +61,6 @@ impl Default for AppState {
                     .match_media("(prefers-color-scheme: dark)")
                     .unwrap()
                     .unwrap();
-                console_log!(&media);
                 media.matches()
             });
 

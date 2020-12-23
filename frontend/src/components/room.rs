@@ -1,7 +1,7 @@
 use crate::components::user_avatar::PROFILE_PICTURE_URL;
 use crate::components::{CreateMessage, RoomMessages};
 use crate::services::room::{fetch_room_members, join_room};
-use crate::utils::use_token;
+use crate::utils::{use_token, format_time};
 use common::User;
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
@@ -197,7 +197,7 @@ pub fn show_room(props: &ShowRoomProps) -> Html {
                         <MatIcon>{ "access_time" }</MatIcon>
                         <h3>{ "Created at" }</h3>
                     </header>
-                    <span>{ &props.room.created_at }</span>
+                    <span>{ format_time(&props.room.created_at) }</span>
                 </section>
             </section>
 
