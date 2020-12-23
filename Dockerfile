@@ -22,5 +22,4 @@ COPY --from=builder /app/dist /static
 ENV DIST_DIR="/static"
 CMD ["./backend"]
 
-# sudo docker run -d --network host --name waichu --env "DATABASE_URL=postgresql://waichu:password@localhost:5432/waichu" --env "DIST_DIR=/static" waichu
-# sudo docker run -d --network host --name waichu --env "DATABASE_URL=postgresql://waichu:password@localhost:5432/waichu" --env "DIST_DIR=/static" --env "PORT=6900" ghcr.io/hamza1311/waichu
+# DEBUG CMD: docker run -d --network host --name waichu --env "DATABASE_URL=postgresql://waichu:password@localhost:5432/waichu" waichu

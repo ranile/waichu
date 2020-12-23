@@ -22,8 +22,10 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: cargo-${{ runner.os }}-${{ hashFiles('**/Cargo.toml') }}
+          key: cargo-${{ runner.os }}-fmt-${{ hashFiles('**/Cargo.toml') }}
           restore-keys: |
+            cargo-${{ runner.os }}-fmt-
+            cargo-${{ runner.os }}-clippy-
             cargo-${{ runner.os }}-
 
       - name: Run cargo fmt
@@ -49,8 +51,10 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: cargo-${{ runner.os }}-${{ hashFiles('**/Cargo.toml') }}
+          key: cargo-${{ runner.os }}-clippy-${{ hashFiles('**/Cargo.toml') }}
           restore-keys: |
+            cargo-${{ runner.os }}-clippy-
+            cargo-${{ runner.os }}-fmt-
             cargo-${{ runner.os }}-
 
       - name: Run clippy on backend & common (linux target)
