@@ -46,7 +46,7 @@ jobs:
           TEST_DATABASE_URL: postgresql://waichu:password@localhost:5432/waichu
         with:
           command: test
-          args: -p backend -- --test-threads 1
+          args: --release -p backend -- --test-threads 1
 
       - name: Build backend
         uses: actions-rs/cargo@v1
@@ -108,7 +108,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: backend
-          path: target/release/backend
+          path: artifacts/backend
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
