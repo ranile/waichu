@@ -3,26 +3,59 @@ use common::User;
 use std::cell::RefCell;
 use std::rc::Rc;
 use yew::prelude::*;
-use yew::web_sys::MouseEvent;
 use yew_functional::{function_component, use_state};
 use yew_material::{
     dialog::{ActionType, MatDialogAction},
     MatButton, MatDialog, MatIconButton, WeakComponentLink,
 };
-use yew_state::{SharedHandle, SharedState};
+use yew_state::{SharedHandle, SharedState, SharedStateComponent};
 
 pub const PROFILE_PICTURE_URL: &str = "https://i.redd.it/j04fpwy2ea261.png";
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct UserAvatarProps {
     pub user: User,
-    #[prop_or_default]
-    pub show_details_on_click: Option<Callback<MouseEvent>>,
-    #[prop_or_default]
-    handle: SharedHandle<AppState>,
+    #[prop_or(true)]
+    pub show_details_on_click: bool,
 }
 
-impl SharedState for UserAvatarProps {
+#[function_component(UserAvatar)]
+pub fn user_avatar(props: &UserAvatarProps) -> Html {
+    let (open, set_open) = use_state(|| false);
+
+    let onclick = if props.show_details_on_click {
+        {
+            let set_open = set_open.clone();
+            Callback::from(move |_| {
+                set_open(true);
+            })
+        }
+    } else {
+        Callback::noop()
+    };
+
+    let on_dialog_closed = Callback::from(move |_| set_open(false));
+
+    html! {<>
+        <span class="user-avatar" onclick=onclick>
+            <MatIconButton>
+                <img src=PROFILE_PICTURE_URL />
+            </MatIconButton>
+        </span>
+        <SharedStateComponent<UserProfileDialog> user=&props.user open=*open onclosed=on_dialog_closed />
+    </>}
+}
+
+#[derive(Clone, Properties, PartialEq)]
+pub struct UserProfileDialogProps {
+    pub user: User,
+    pub open: bool,
+    #[prop_or_default]
+    pub handle: SharedHandle<AppState>,
+    pub onclosed: Callback<()>,
+}
+
+impl SharedState for UserProfileDialogProps {
     type Handle = SharedHandle<AppState>;
 
     fn handle(&mut self) -> &mut Self::Handle {
@@ -30,17 +63,9 @@ impl SharedState for UserAvatarProps {
     }
 }
 
-#[function_component(UserAvatar)]
-pub fn user_avatar(props: &UserAvatarProps) -> Html {
+#[function_component(UserProfileDialog)]
+pub fn user_profile_dialog(props: &UserProfileDialogProps) -> Html {
     let (dialog_link, _) = use_state(WeakComponentLink::<MatDialog>::default);
-
-    let onclick = {
-        let dialog_link = Rc::clone(&dialog_link);
-        Callback::from(move |_| {
-            dialog_link.show();
-        })
-    };
-
     let logout_button = match props.handle.state().me.as_ref() {
         Some(user) if user.uuid == props.user.uuid => html! {
             <MatButton label="Sign out" icon="exit_to_app" />
@@ -67,15 +92,12 @@ pub fn user_avatar(props: &UserAvatarProps) -> Html {
         })
     };
 
-    html! {<>
-        <span class="user-avatar" onclick=onclick>
-            <MatIconButton>
-                <img src=PROFILE_PICTURE_URL />
-            </MatIconButton>
-        </span>
+    html! {
         <span class="user-profile-dialog-container">
             <MatDialog
                 dialog_link=&*dialog_link
+                onclosed=&props.onclosed
+                open=props.open
                 // onclosed=on_dialog_closed TODO fix yew-material coz ya boi an idiot
             >
                 <section class="profile-dialog-container">
@@ -91,5 +113,5 @@ pub fn user_avatar(props: &UserAvatarProps) -> Html {
                 </MatDialogAction>
             </MatDialog>
         </span>
-    </>}
+    }
 }

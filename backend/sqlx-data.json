@@ -1,5 +1,84 @@
 {
   "db": "PostgreSQL",
+  "00bab3778a96aa952c22809a8767f18e7b98a544307f78a925c0cae33cd4ebb0": {
+    "query": "select messages.uuid,\n               messages.content,\n               messages.room,\n               messages.created_at,\n               messages.type as \"type_: MessageType\",\n               u.username   as author_username,\n               u.uuid       as author_uuid,\n               u.password   as author_password,\n               u.created_at as author_created_at\n        from messages\n                 left join users u on u.uuid = author\n        where room = $1;\n    ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "uuid",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 1,
+          "name": "content",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "room",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 3,
+          "name": "created_at",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 4,
+          "name": "type_: MessageType",
+          "type_info": {
+            "Custom": {
+              "name": "message_type",
+              "kind": {
+                "Enum": [
+                  "default",
+                  "room_join",
+                  "room_leave"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "ordinal": 5,
+          "name": "author_username",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 6,
+          "name": "author_uuid",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 7,
+          "name": "author_password",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "author_created_at",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
   "0101d252028eed262781dc3770402575b6ca1682d78ac39bf08d018824df897e": {
     "query": "\n            select r.*\n            from room_members\n                left join rooms r on r.uuid = room_members.room_id\n            where user_id = $1;\n        ",
     "describe": {
@@ -148,8 +227,8 @@
       ]
     }
   },
-  "68fa7b44d33cb0ab5cc9988949106dda259a8aa8e35ca9da7a763f9b3da3cbe4": {
-    "query": "\n        select messages.uuid,\n               messages.content,\n               messages.room,\n               messages.created_at,\n               u.username   as author_username,\n               u.uuid       as author_uuid,\n               u.password   as author_password,\n               u.created_at as author_created_at\n        from messages\n                 left join users u on u.uuid = messages.author\n        where room = $1;\n    ",
+  "637077faa185ac0ea9ed67fc86ed852ba49e5ce30e4150dd34cdc6b2ba2d89ff": {
+    "query": "\n            insert into messages(uuid, author, room, content, type)\n            values ($1, $2, $3, $4, $5)\n            returning uuid, content, room, created_at, type as \"type_: MessageType\";\n        ",
     "describe": {
       "columns": [
         {
@@ -174,34 +253,42 @@
         },
         {
           "ordinal": 4,
-          "name": "author_username",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 5,
-          "name": "author_uuid",
-          "type_info": "Uuid"
-        },
-        {
-          "ordinal": 6,
-          "name": "author_password",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 7,
-          "name": "author_created_at",
-          "type_info": "Timestamptz"
+          "name": "type_: MessageType",
+          "type_info": {
+            "Custom": {
+              "name": "message_type",
+              "kind": {
+                "Enum": [
+                  "default",
+                  "room_join",
+                  "room_leave"
+                ]
+              }
+            }
+          }
         }
       ],
       "parameters": {
         "Left": [
-          "Uuid"
+          "Uuid",
+          "Uuid",
+          "Uuid",
+          "Text",
+          {
+            "Custom": {
+              "name": "message_type",
+              "kind": {
+                "Enum": [
+                  "default",
+                  "room_join",
+                  "room_leave"
+                ]
+              }
+            }
+          }
         ]
       },
       "nullable": [
-        false,
-        false,
-        false,
         false,
         false,
         false,
@@ -298,53 +385,6 @@
         ]
       },
       "nullable": [
-        false,
-        false,
-        false
-      ]
-    }
-  },
-  "be995a1a6f2caab594f55171253d5e07426948b750611b7d6e93d95e5d08f0e2": {
-    "query": "\n            insert into messages(uuid, author, room, content)\n            values ($1, $2, $3, $4)\n            returning *;\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "uuid",
-          "type_info": "Uuid"
-        },
-        {
-          "ordinal": 1,
-          "name": "content",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "author",
-          "type_info": "Uuid"
-        },
-        {
-          "ordinal": 3,
-          "name": "room",
-          "type_info": "Uuid"
-        },
-        {
-          "ordinal": 4,
-          "name": "created_at",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid",
-          "Uuid",
-          "Uuid",
-          "Text"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
         false,
         false,
         false

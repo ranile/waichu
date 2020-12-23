@@ -74,7 +74,7 @@ pub fn show_room_messages(props: &MessagesProps) -> Html {
         LoadingState::Loading => {
             messages.borrow_mut().clear();
             html!("loading")
-        },
+        }
         LoadingState::Loaded(data) => {
             let mut messages = messages.borrow_mut();
             data.iter().for_each(|it| messages.push(it.clone()));

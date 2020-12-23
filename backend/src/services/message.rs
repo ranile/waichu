@@ -1,6 +1,6 @@
 use crate::websocket;
 use common::websocket::{MessagePayload, OpCode};
-use common::{Message, Room, User, MessageType};
+use common::{Message, MessageType, Room, User};
 use sqlx::PgConnection;
 use std::sync::Arc;
 
@@ -10,19 +10,21 @@ pub async fn create(db: &mut PgConnection, message: Message) -> anyhow::Result<M
         author,
         room,
         content,
-        ..
+        created_at: _,
+        type_,
     } = message;
 
     let inserted = sqlx::query!(
         r#"
-            insert into messages(uuid, author, room, content)
-            values ($1, $2, $3, $4)
+            insert into messages(uuid, author, room, content, type)
+            values ($1, $2, $3, $4, $5)
             returning uuid, content, room, created_at, type as "type_: MessageType";
         "#,
         uuid,
         author.uuid,
         room.uuid,
-        content
+        content,
+        type_ as _,
     )
     .fetch_one(db)
     .await?;

@@ -1,6 +1,6 @@
 use crate::{services, websocket};
 use common::websocket::{MessagePayload, OpCode};
-use common::{Room, RoomMember, User};
+use common::{Message, MessageType, Room, RoomMember, User};
 use sqlx::types::Uuid;
 use sqlx::PgConnection;
 use std::sync::Arc;
@@ -54,7 +54,7 @@ pub async fn join(
         user.uuid,
         has_elevated_perms
     )
-    .fetch_one(db)
+    .fetch_one(&mut *db)
     .await?;
     let member = RoomMember {
         room: room.clone(),
@@ -63,7 +63,7 @@ pub async fn join(
         joined_at: ret.joined_at,
     };
 
-    println!("send 0");
+    // notify user
     websocket::send_message(
         Arc::new(MessagePayload {
             op: OpCode::RoomJoin,
@@ -72,6 +72,18 @@ pub async fn join(
         |uuid| uuid == user.uuid,
     )
     .await;
+
+    // send the message that user joined
+    services::message::create(
+        db,
+        Message::new_with_type(
+            user.clone(),
+            room.clone(),
+            "".to_string(),
+            MessageType::RoomJoin,
+        ),
+    )
+    .await?;
     Ok(member)
 }
 

@@ -4,7 +4,6 @@ use wasm_bindgen::prelude::*;
 use web_sys::MediaQueryList;
 use weblog::wasm_bindgen::JsCast;
 use yew_functional::{use_context, use_effect, use_state};
-use yew_md::pulldown_cmark::escape::StrWrite;
 
 #[allow(clippy::rc_buffer)] // this needs to be Rc so I'm not cloning it a billion times
 pub fn use_token() -> Rc<String> {
@@ -48,7 +47,7 @@ pub fn use_on_mobile_listener() -> bool {
 }
 
 pub fn format_time(time: &DateTime<Utc>) -> String {
-    let local = time.naive_local();
+    let local = time.with_timezone(&Local).naive_local();
     let now = Local::now().naive_local();
 
     let is_today = local.date() == now.date();

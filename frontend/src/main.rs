@@ -14,6 +14,7 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::str::FromStr;
 use uuid::Uuid;
 use wasm_bindgen::JsValue;
 use weblog::console_log;
@@ -126,7 +127,7 @@ fn home(props: &HomeProps) -> Html {
 
     let user_avatar_action = if let Some(user) = &state.me {
         html! {
-            <SharedStateComponent<UserAvatar> user=user />
+            <UserAvatar user=user />
         }
     } else {
         html!()
@@ -189,6 +190,7 @@ fn main_application(handle: &SharedHandle<AppState>) -> Html {
     let (has_authenticated, set_has_authenticated) = use_state(|| false);
 
     let router = use_ref(RouteAgentDispatcher::<()>::new);
+    let route_service = use_ref(RouteService::<()>::new);
     let dispatcher = use_ref(websocket::Connection::dispatcher);
     let events_dispatcher = use_ref(InternalEventBus::dispatcher);
 
@@ -208,64 +210,65 @@ fn main_application(handle: &SharedHandle<AppState>) -> Html {
     {
         let dispatcher = Rc::clone(&dispatcher);
         let router = Rc::clone(&router);
+        let route_service = Rc::clone(&route_service);
         let handle = handle.clone();
 
         use_effect(move || {
             let bridge = Connection::bridge(handle.reduce_callback_with(
-                move |state, msg: websocket::Response| {
-                    match msg {
-                        Response::Connected => {
-                            dispatcher
-                                .borrow_mut()
-                                .send(Request::Authenticate(state.token.as_ref().unwrap().clone()));
-                        }
-                        Response::Message(m) => {
-                            match m.op {
-                                OpCode::Authenticated => {
-                                    let data = serde_json::from_value::<AuthenticatedPayload>(
-                                        m.data.clone(),
-                                    )
-                                    .unwrap();
+                move |state, msg: websocket::Response| match msg {
+                    Response::Connected => {
+                        dispatcher
+                            .borrow_mut()
+                            .send(Request::Authenticate(state.token.as_ref().unwrap().clone()));
+                    }
+                    Response::Message(m) => {
+                        match m.op {
+                            OpCode::Authenticated => {
+                                let data =
+                                    serde_json::from_value::<AuthenticatedPayload>(m.data.clone())
+                                        .unwrap();
 
-                                    state.rooms = Rc::new(RefCell::new(data.rooms));
-                                    state.me = Some(data.me);
-                                    set_has_authenticated(true);
+                                state.rooms = Rc::new(RefCell::new(data.rooms));
+                                state.me = Some(data.me);
+                                set_has_authenticated(true);
 
-                                    let route = Route::from(AppRoute::Home);
-                                    router.borrow_mut().send(RouteRequest::ChangeRoute(route));
-                                }
-                                OpCode::RoomJoin => {
-                                    let data =
-                                        serde_json::from_value::<Room>(m.data.clone()).unwrap();
+                                let uuid = route_service
+                                    .borrow()
+                                    .get_route()
+                                    .route
+                                    .replace("/room/", "");
+                                let uuid = Uuid::from_str(&uuid);
 
-                                    // maybe try making another Agent that sends a message
-                                    // when we're added to a new room
-                                    // same will be used for notifying messages
-                                    // I'll probably switch to that approach when I write the messages Agent
-                                    // since it'll be a requirement unless I wanna make spaghetti
-                                    // or I could use multiple states, will see
-
-                                    state.rooms.borrow_mut().push(data);
-                                    state.force_render += 1;
-                                }
-                                OpCode::MessageCreate => {
-                                    let data =
-                                        serde_json::from_value::<Message>(m.data.clone()).unwrap();
-                                    events_dispatcher
-                                        .borrow_mut()
-                                        .send(websocket::internal_events::Request::NewMessage(data))
-                                }
-                                _ => panic!("fucked"),
+                                let route = match uuid {
+                                    Ok(uuid) => AppRoute::Rooms(uuid),
+                                    Err(_) => AppRoute::Home,
+                                };
+                                let route = Route::from(route);
+                                router.borrow_mut().send(RouteRequest::ChangeRoute(route));
                             }
-                            console_log!(JsValue::from_serde(&*m).unwrap());
+                            OpCode::RoomJoin => {
+                                let data = serde_json::from_value::<Room>(m.data.clone()).unwrap();
+
+                                state.rooms.borrow_mut().push(data);
+                                state.force_render += 1;
+                            }
+                            OpCode::MessageCreate => {
+                                let data =
+                                    serde_json::from_value::<Message>(m.data.clone()).unwrap();
+                                events_dispatcher
+                                    .borrow_mut()
+                                    .send(websocket::internal_events::Request::NewMessage(data))
+                            }
+                            _ => panic!("fucked"),
                         }
-                        Response::Error(e) => {
-                            console_log!(e.to_string());
-                            dispatcher.borrow_mut().send(Request::Disconnect);
-                        }
-                        Response::Closed => {
-                            dispatcher.borrow_mut().send(Request::Disconnect);
-                        }
+                        console_log!(JsValue::from_serde(&*m).unwrap());
+                    }
+                    Response::Error(e) => {
+                        console_log!(e.to_string());
+                        dispatcher.borrow_mut().send(Request::Disconnect);
+                    }
+                    Response::Closed => {
+                        dispatcher.borrow_mut().send(Request::Disconnect);
                     }
                 },
             ));

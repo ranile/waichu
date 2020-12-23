@@ -151,45 +151,44 @@ mwc-dialog {
 }
 
 .message-card {
-//    --mdc-typography-body2-font-size: 0.95em;
-//
-//    mwc-list-item {
-//        mwc-icon {
-//            padding-right: 0.5em;
-//        }
-//
-//        span {
-//            font-size: 1.1em;
-//            color: var(--mdc-theme-text-primary-on-background);
-//        }
-//
-//        span[slot="secondary"] {
-//            font-size: 1em;
-//            color: var(--mdc-theme-text-primary-on-background);
-//        }
-//    }
-
     display: flex;
     gap: 0.4em;
 
-    .content-container {
-        display: flex;
-        flex-direction: column;
-        gap: 0.3em;
+    .timestamp {
+        font-size: 0.77em;
+    }
 
-        section {
+    &[data_type="default"] {
+        .content-container {
             display: flex;
-            gap: 0.65em;
-            align-items: flex-end;
+            flex-direction: column;
+            gap: 0.3em;
 
-            .author {
-                font-weight: 500;
-                font-size: 1.1em;
-            }
+            section {
+                display: flex;
+                gap: 0.65em;
+                align-items: flex-end;
 
-            .timestamp {
-                font-size: 0.77em;
+                .author {
+                    font-weight: 500;
+                    font-size: 1.1em;
+                }
             }
+        }
+    }
+
+    &[data_type="join"] {
+        align-items: center;
+        padding: 0 0.5em;
+        cursor: pointer;
+
+        span[class="user-avatar"] {
+            --mdc-icon-size: 1em;
+            --mdc-icon-button-size: 1.3em;
+        }
+
+        .timestamp {
+            align-self: revert;
         }
     }
 

@@ -12,4 +12,4 @@ pub use messages::RoomMessages;
 pub use room::Room;
 pub use rooms_list::RoomsList;
 pub use single_message::SingleMessage;
-pub use user_avatar::UserAvatar;
+pub use user_avatar::{UserAvatar, UserProfileDialog};

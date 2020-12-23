@@ -1,7 +1,7 @@
 use crate::components::user_avatar::PROFILE_PICTURE_URL;
 use crate::components::{CreateMessage, RoomMessages};
 use crate::services::room::{fetch_room_members, join_room};
-use crate::utils::{use_token, format_time};
+use crate::utils::{format_time, use_token};
 use common::User;
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;

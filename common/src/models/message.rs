@@ -1,10 +1,10 @@
 use crate::{Room, User};
 use chrono::{DateTime, Utc};
+use serde::export::TryFrom;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::str::FromStr;
 use uuid::Uuid;
-use serde::export::TryFrom;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Message {
@@ -51,10 +51,12 @@ impl PartialEq for Message {
 #[derive(Copy, Clone, Debug)]
 #[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::Type))]
 #[cfg_attr(not(target_arch = "wasm32"), sqlx(rename = "message_type"))]
-#[cfg_attr(not(target_arch = "wasm32"), sqlx(rename_all = "lowercase"))]
 pub enum MessageType {
+    #[cfg_attr(not(target_arch = "wasm32"), sqlx(rename = "default"))]
     Default,
+    #[cfg_attr(not(target_arch = "wasm32"), sqlx(rename = "room_join"))]
     RoomJoin,
+    #[cfg_attr(not(target_arch = "wasm32"), sqlx(rename = "room_leave"))]
     RoomLeave,
 }
 
@@ -110,8 +112,8 @@ mod message_type_serializer_deserializer {
         }
 
         fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
+        where
+            E: de::Error,
         {
             MessageType::from_str(v).map_err(|_e| de::Error::custom("invalid message type"))
         }
