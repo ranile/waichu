@@ -2,18 +2,22 @@ use crate::components::user_avatar::PROFILE_PICTURE_URL;
 use crate::components::{CreateMessage, RoomMessages};
 use crate::services::room::{fetch_room_members, join_room};
 use crate::utils::{format_time, use_token};
+use crate::{DATA_THEME_ATTR, PREFERS_DARK_KEY};
 use common::User;
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
 use weblog::console_log;
 use yew::prelude::*;
-use yew_functional::{function_component, use_effect, use_effect_with_deps, use_state};
+use yew::services::storage::Area;
+use yew::services::StorageService;
+use yew_functional::{function_component, use_effect, use_effect_with_deps, use_ref, use_state};
 use yew_material::{
     dialog::{ActionType, MatDialogAction},
     top_app_bar::{
         MatTopAppBar, MatTopAppBarActionItems, MatTopAppBarNavigationIcon, MatTopAppBarTitle,
     },
-    MatButton, MatDialog, MatIcon, MatIconButton, MatTextField, TextFieldType, WeakComponentLink,
+    MatButton, MatDialog, MatIcon, MatIconButton, MatIconButtonToggle, MatTextField, TextFieldType,
+    WeakComponentLink,
 };
 
 #[derive(Clone, Properties, PartialEq)]
@@ -62,6 +66,23 @@ fn top_room_bar(props: &TopRoomBarProps) -> Html {
         .map(|it| &it.name)
         .unwrap_or(&default_room_name);
 
+    let storage_service = use_ref(|| StorageService::new(Area::Local).unwrap());
+    let on_theme_change = Callback::from(move |state: bool| {
+        let theme = if state {
+            storage_service.borrow_mut().store(PREFERS_DARK_KEY, Ok("true".to_string()));
+            "dark"
+        } else {
+            storage_service.borrow_mut().remove(PREFERS_DARK_KEY);
+            "default"
+        };
+
+        yew::utils::document()
+            .body()
+            .unwrap()
+            .set_attribute(DATA_THEME_ATTR, theme)
+            .expect("failed to set theme attribute");
+    });
+
     html! {
         <MatTopAppBar
             onnavigationiconclick=nav_icon_clicked>
@@ -72,6 +93,15 @@ fn top_room_bar(props: &TopRoomBarProps) -> Html {
                     { room_name }
                 </span>
             </MatTopAppBarTitle>
+
+            <MatTopAppBarActionItems>
+                <MatIconButtonToggle
+                    on_icon="light_mode"
+                    off_icon="dark_mode"
+                    onchange=on_theme_change
+                    on=yew::utils::document().body().unwrap().get_attribute("data-theme").unwrap() == "dark"
+                />
+            </MatTopAppBarActionItems>
 
             <MatTopAppBarActionItems>
                 // why not &

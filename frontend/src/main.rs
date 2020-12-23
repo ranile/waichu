@@ -47,7 +47,9 @@ pub struct AppState {
 }
 
 const TOKEN_KEY: &str = "token";
-const PREFERS_DARK_KEY: &str = "token";
+const PREFERS_DARK_KEY: &str = "prefersDark";
+
+const DATA_THEME_ATTR: &str = "data-theme";
 
 impl Default for AppState {
     fn default() -> Self {
@@ -179,7 +181,7 @@ fn main_application(handle: &SharedHandle<AppState>) -> Html {
     yew::utils::document()
         .body()
         .unwrap()
-        .set_attribute("data-theme", theme)
+        .set_attribute(DATA_THEME_ATTR, theme)
         .expect("failed to set theme attribute");
 
     let (has_sent_connect, set_has_sent_connect) = use_state(|| false);
