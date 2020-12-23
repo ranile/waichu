@@ -44,7 +44,7 @@ body[data-theme=dark] {
     mwc-top-app-bar {
         --mdc-theme-primary: var(--background-secondary);
 
-        .room-name {
+        .room-name, [slot=navigationIcon] {
             color: var(--text-primary);
         }
 
