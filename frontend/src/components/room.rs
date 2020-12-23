@@ -17,6 +17,72 @@ use yew_material::{
 };
 
 #[derive(Clone, Properties, PartialEq)]
+struct TopRoomBarProps {
+    pub room: Option<common::Room>,
+    pub user_avatar_action: Html,
+    pub onnavigationiconclick: Option<Callback<()>>,
+    pub dialog_link: Rc<WeakComponentLink<MatDialog>>,
+}
+
+#[function_component(TopRoomBar)]
+fn top_room_bar(props: &TopRoomBarProps) -> Html {
+    let is_on_mobile = props.onnavigationiconclick.is_some();
+
+    let room_name_click = if props.room.is_some() {
+        let dialog_link = Rc::clone(&props.dialog_link);
+        Callback::from(move |_| {
+            dialog_link.show();
+        })
+    } else {
+        Callback::noop()
+    };
+
+    let nav_icon_clicked = {
+        let onnavigationiconclick = props.onnavigationiconclick.clone();
+        Callback::from(move |_| {
+            let onnavigationiconclick = onnavigationiconclick.as_ref().unwrap();
+            onnavigationiconclick.emit(());
+        })
+    };
+
+    let nav_icon = if is_on_mobile {
+        html! {
+            <MatTopAppBarNavigationIcon>
+                <MatIconButton icon="menu"></MatIconButton>
+            </MatTopAppBarNavigationIcon>
+        }
+    } else {
+        html!()
+    };
+
+    let default_room_name = "No room selected".to_string();
+    let room_name = props
+        .room
+        .as_ref()
+        .map(|it| &it.name)
+        .unwrap_or(&default_room_name);
+
+    html! {
+        <MatTopAppBar
+            onnavigationiconclick=nav_icon_clicked>
+            { nav_icon }
+
+            <MatTopAppBarTitle>
+                <span class="room-name" onclick=room_name_click>
+                    { room_name }
+                </span>
+            </MatTopAppBarTitle>
+
+            <MatTopAppBarActionItems>
+                // why not &
+                { props.user_avatar_action.clone() }
+            </MatTopAppBarActionItems>
+        </MatTopAppBar>
+
+    }
+}
+
+#[derive(Clone, Properties, PartialEq)]
 struct UserCardProps {
     user: User,
 }
@@ -33,7 +99,7 @@ fn user_card(props: &UserCardProps) -> Html {
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct ShowRoomProps {
-    pub room: common::Room,
+    pub room: Option<common::Room>,
     pub user_avatar_action: Html,
     pub onnavigationiconclick: Option<Callback<()>>,
 }
@@ -43,8 +109,35 @@ pub fn show_room(props: &ShowRoomProps) -> Html {
     let is_on_mobile = props.onnavigationiconclick.is_some();
 
     let (dialog_link, _) = use_state(WeakComponentLink::<MatDialog>::default);
+
+    use_effect(move || {
+        if !is_on_mobile {
+            let func = js_sys::Function::new_no_args("document.querySelector('mwc-top-app-bar').setAttribute('style', `--mdc-top-app-bar-width: calc(100% - ${document.querySelector('#drawer-sidebar').offsetWidth}px)`)");
+            yew::utils::window().set_onresize(Some(&func));
+            let _ = func.call0(&yew::utils::window());
+
+            || yew::utils::window().set_onresize(None)
+        } else {
+            || ()
+        }
+    });
+
+    let room = match props.room.as_ref() {
+        Some(room) => room,
+        None => {
+            return html! {
+                <TopRoomBar
+                    onnavigationiconclick=&props.onnavigationiconclick
+                    user_avatar_action=&props.user_avatar_action
+                    dialog_link=dialog_link.clone()
+                    room=None
+                />
+            }
+        }
+    };
     let (members, set_members) = use_state(Vec::new);
-    let room_id = props.room.uuid;
+
+    let room_id = room.uuid;
 
     let (member_fetch_error, set_member_fetch_error) = use_state(|| None);
 
@@ -73,51 +166,12 @@ pub fn show_room(props: &ShowRoomProps) -> Html {
         );
     }
 
-    let room_name_click = {
-        let dialog_link = Rc::clone(&dialog_link);
-        Callback::from(move |_| {
-            dialog_link.show();
-            console_log!(room_id.to_string())
-        })
-    };
-
     let user_cards = match &*member_fetch_error {
         Some(e) => vec![html!(e.to_string())],
         None => members
             .iter()
             .map(|member| html! { <UserCard user=&member.user /> })
             .collect::<Vec<Html>>(),
-    };
-
-    use_effect(move || {
-        if !is_on_mobile {
-            let func = js_sys::Function::new_no_args("document.querySelector('mwc-top-app-bar').setAttribute('style', `--mdc-top-app-bar-width: calc(100% - ${document.querySelector('#drawer-sidebar').offsetWidth}px)`)");
-            let _ = func.call0(&yew::utils::window());
-
-            yew::utils::window().set_onresize(Some(&func));
-
-            || yew::utils::window().set_onresize(None)
-        } else {
-            || ()
-        }
-    });
-
-    let nav_icon_clicked = {
-        let onnavigationiconclick = props.onnavigationiconclick.clone();
-        Callback::from(move |_| {
-            let onnavigationiconclick = onnavigationiconclick.as_ref().unwrap();
-            onnavigationiconclick.emit(());
-        })
-    };
-
-    let nav_icon = if is_on_mobile {
-        html! {
-            <MatTopAppBarNavigationIcon>
-                <MatIconButton icon="menu"></MatIconButton>
-            </MatTopAppBarNavigationIcon>
-        }
-    } else {
-        html!()
     };
 
     let (invitee_username, set_invitee_username) = use_state(String::new);
@@ -153,29 +207,19 @@ pub fn show_room(props: &ShowRoomProps) -> Html {
     };
 
     html! {<>
-        <MatTopAppBar
-            onnavigationiconclick=nav_icon_clicked>
-            { nav_icon }
-
-            <MatTopAppBarTitle>
-                <span class="room-name" onclick=room_name_click>
-                    { &props.room.name }
-                </span>
-            </MatTopAppBarTitle>
-
-            <MatTopAppBarActionItems>
-                // why not &
-                { props.user_avatar_action.clone() }
-            </MatTopAppBarActionItems>
-        </MatTopAppBar>
-
+        <TopRoomBar
+            onnavigationiconclick=&props.onnavigationiconclick
+            user_avatar_action=&props.user_avatar_action
+            dialog_link=dialog_link.clone()
+            room=room.clone()
+        />
         <section class="room-content">
-            <RoomMessages room=&props.room />
-            <CreateMessage room=&props.room />
+            <RoomMessages room=room />
+            <CreateMessage room=room />
         </section>
 
         <MatDialog
-            heading=&props.room.name
+            heading=&room.name
             dialog_link=&*dialog_link
             // onclosed=on_dialog_closed TODO fix yew-material coz ya boi an idiot
         >
@@ -197,7 +241,7 @@ pub fn show_room(props: &ShowRoomProps) -> Html {
                         <MatIcon>{ "access_time" }</MatIcon>
                         <h3>{ "Created at" }</h3>
                     </header>
-                    <span>{ format_time(&props.room.created_at) }</span>
+                    <span>{ format_time(&room.created_at) }</span>
                 </section>
             </section>
 
@@ -206,7 +250,7 @@ pub fn show_room(props: &ShowRoomProps) -> Html {
             </MatDialogAction>
         </MatDialog>
         <MatDialog
-            heading=format!("Add member in {}", props.room.name)
+            heading=format!("Add member in {}", room.name)
             dialog_link=&*invite_dialog_link
         >
             <MatTextField
