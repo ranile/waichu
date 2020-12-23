@@ -367,6 +367,7 @@ dependencies = [
  "http",
  "serde",
  "serde_json",
+ "sqlx",
  "uuid",
  "warp",
 ]

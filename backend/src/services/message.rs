@@ -1,6 +1,6 @@
 use crate::websocket;
 use common::websocket::{MessagePayload, OpCode};
-use common::{Message, Room, User};
+use common::{Message, Room, User, MessageType};
 use sqlx::PgConnection;
 use std::sync::Arc;
 
@@ -14,11 +14,11 @@ pub async fn create(db: &mut PgConnection, message: Message) -> anyhow::Result<M
     } = message;
 
     let inserted = sqlx::query!(
-        "
+        r#"
             insert into messages(uuid, author, room, content)
             values ($1, $2, $3, $4)
-            returning *;
-        ",
+            returning uuid, content, room, created_at, type as "type_: MessageType";
+        "#,
         uuid,
         author.uuid,
         room.uuid,
@@ -33,6 +33,7 @@ pub async fn create(db: &mut PgConnection, message: Message) -> anyhow::Result<M
         room,
         content: inserted.content,
         created_at: inserted.created_at,
+        type_: inserted.type_,
     };
 
     websocket::send_message(
@@ -49,19 +50,19 @@ pub async fn create(db: &mut PgConnection, message: Message) -> anyhow::Result<M
 
 pub async fn get_all(conn: &mut PgConnection, room: &Room) -> anyhow::Result<Vec<Message>> {
     let returned = sqlx::query!(
-        "
-        select messages.uuid,
+        r#"select messages.uuid,
                messages.content,
                messages.room,
                messages.created_at,
+               messages.type as "type_: MessageType",
                u.username   as author_username,
                u.uuid       as author_uuid,
                u.password   as author_password,
                u.created_at as author_created_at
         from messages
-                 left join users u on u.uuid = messages.author
+                 left join users u on u.uuid = author
         where room = $1;
-    ",
+    "#,
         room.uuid
     )
     .fetch_all(conn)
@@ -80,6 +81,7 @@ pub async fn get_all(conn: &mut PgConnection, room: &Room) -> anyhow::Result<Vec
             room: room.clone(),
             content: value.content,
             created_at: value.created_at,
+            type_: value.type_,
         })
         .collect::<Vec<Message>>();
 
