@@ -146,7 +146,7 @@ fn home(props: &HomeProps) -> Html {
     };
 
     let room = html! {
-        <ShowRoom room=current.map(|it| it.clone()) user_avatar_action=user_avatar_action onnavigationiconclick=on_nav_click />
+        <ShowRoom room=current.cloned() user_avatar_action=user_avatar_action onnavigationiconclick=on_nav_click />
     };
 
     let drawer_type = if is_on_mobile { "modal" } else { "" };

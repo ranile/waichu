@@ -6,7 +6,6 @@ use crate::{DATA_THEME_ATTR, PREFERS_DARK_KEY};
 use common::User;
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
-use weblog::console_log;
 use yew::prelude::*;
 use yew::services::storage::Area;
 use yew::services::StorageService;
@@ -69,7 +68,9 @@ fn top_room_bar(props: &TopRoomBarProps) -> Html {
     let storage_service = use_ref(|| StorageService::new(Area::Local).unwrap());
     let on_theme_change = Callback::from(move |state: bool| {
         let theme = if state {
-            storage_service.borrow_mut().store(PREFERS_DARK_KEY, Ok("true".to_string()));
+            storage_service
+                .borrow_mut()
+                .store(PREFERS_DARK_KEY, Ok("true".to_string()));
             "dark"
         } else {
             storage_service.borrow_mut().remove(PREFERS_DARK_KEY);
@@ -159,7 +160,7 @@ pub fn show_room(props: &ShowRoomProps) -> Html {
                 <TopRoomBar
                     onnavigationiconclick=&props.onnavigationiconclick
                     user_avatar_action=&props.user_avatar_action
-                    dialog_link=dialog_link.clone()
+                    dialog_link=dialog_link
                     room=None
                 />
             }

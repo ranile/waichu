@@ -17,7 +17,7 @@ use warp::http::StatusCode;
 use warp::{Filter, Rejection, Reply};
 
 pub fn setup_logger() -> anyhow::Result<()> {
-    let dispatch = fern::Dispatch::new()
+    let mut dispatch = fern::Dispatch::new()
         .format(|out, message, record| {
             out.finish(format_args!(
                 "[{}][{}][{}] {}",
@@ -31,7 +31,9 @@ pub fn setup_logger() -> anyhow::Result<()> {
         .chain(std::io::stdout());
 
     #[cfg(not(debug_assertions))]
-    dispatch.chain(fern::log_file("output.log")?);
+    {
+        dispatch = dispatch.chain(fern::log_file("output.log")?);
+    }
 
     dispatch.apply()?;
     Ok(())
