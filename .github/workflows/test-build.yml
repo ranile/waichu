@@ -39,15 +39,15 @@ jobs:
           restore-keys: |
             cargo-${{ runner.os }}-backend
             cargo-${{ runner.os }}-
-# TEMP - Just speeding up debugging
-#      - name: Test backend
-#        uses: actions-rs/cargo@v1
-#        env:
-#          SQLX_OFFLINE: true
-#          TEST_DATABASE_URL: postgresql://waichu:password@localhost:5432/waichu
-#        with:
-#          command: test
-#          args: --release -p backend -- --test-threads 1
+
+      - name: Test backend
+        uses: actions-rs/cargo@v1
+        env:
+          SQLX_OFFLINE: true
+          TEST_DATABASE_URL: postgresql://waichu:password@localhost:5432/waichu
+        with:
+          command: test
+          args: --release -p backend -- --test-threads 1
 
       - name: Build backend
         uses: actions-rs/cargo@v1
