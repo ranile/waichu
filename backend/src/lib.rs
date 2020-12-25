@@ -13,11 +13,12 @@ use common::errors::ApiError;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use std::env;
+use std::fs::OpenOptions;
 use warp::http::StatusCode;
 use warp::{Filter, Rejection, Reply};
 
 pub fn setup_logger() -> anyhow::Result<()> {
-    let mut dispatch = fern::Dispatch::new()
+    fern::Dispatch::new()
         .format(|out, message, record| {
             out.finish(format_args!(
                 "[{}][{}][{}] {}",
@@ -28,14 +29,15 @@ pub fn setup_logger() -> anyhow::Result<()> {
             ))
         })
         .level(log::LevelFilter::Debug)
-        .chain(std::io::stdout());
-
-    #[cfg(not(debug_assertions))]
-    {
-        dispatch = dispatch.chain(fern::log_file("output.log")?);
-    }
-
-    dispatch.apply()?;
+        .chain(std::io::stdout())
+        .chain(
+            OpenOptions::new()
+                .write(true)
+                .create(true)
+                .append(false)
+                .open("backend.log")?,
+        )
+        .apply()?;
     Ok(())
 }
 
