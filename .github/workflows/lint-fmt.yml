@@ -61,10 +61,10 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: -p backend -p common -- -D warnings
+          args: --release -p backend -p common -- -D warnings
 
       - name: Run clippy on frontend & common (wasm target)
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: -p frontend -p common --target wasm32-unknown-unknown -- -D warnings
+          args: -p frontend -p common --release --target wasm32-unknown-unknown -- -D warnings
