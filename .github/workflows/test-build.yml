@@ -5,6 +5,7 @@ on:
 
 jobs:
   backend:
+    name: Test & build backend
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -109,6 +110,9 @@ jobs:
         with:
           name: backend
           path: artifacts/backend
+
+      - name: Give backend binary execuatbale permissions
+        run: chmod +x artifacts/backend
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
