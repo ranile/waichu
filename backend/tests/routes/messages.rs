@@ -1,6 +1,6 @@
 use crate::{create_authenticated_user, create_room, create_room_with_user, db, send_message};
 use common::payloads::CreateMessage;
-use common::Message;
+use common::{Message, MessageType};
 use warp::http::StatusCode;
 use warp::test::request;
 
@@ -32,14 +32,16 @@ async fn test_get_messages() {
                 .expect("failed to parse response");
 
             assert_eq!(resp.status(), StatusCode::OK);
-            assert_eq!(parsed_json.len(), messages.len());
+            assert_eq!(parsed_json.len(), messages.len() + 1); // + 1 for `room_join` message
         })
     })
     .await
 }
 
+// This test ensures that the join room message is sent and
+// there is only 1 message at the time of room creation
 #[tokio::test]
-async fn test_get_messages_no_content() {
+async fn test_get_messages_with_no_messages_sent() {
     db(|pool| {
         Box::pin(async {
             let mut conn = pool.acquire().await.expect("can't acquire pool");
@@ -58,8 +60,15 @@ async fn test_get_messages_no_content() {
             let parsed_json = serde_json::from_slice::<Vec<Message>>(resp.body())
                 .expect("failed to parse response");
 
-            assert_eq!(resp.status(), StatusCode::NO_CONTENT);
-            assert_eq!(parsed_json.len(), 0);
+            // there should only be one message, the `room_join` one
+            // one message returns `OK`
+            assert_eq!(resp.status(), StatusCode::OK);
+            assert_eq!(parsed_json.len(), 1);
+
+            let first = parsed_json.first().unwrap();
+
+            assert_eq!(first.type_, MessageType::RoomJoin);
+            assert_eq!(first.author, user);
         })
     })
     .await

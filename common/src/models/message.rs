@@ -48,7 +48,7 @@ impl PartialEq for Message {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 #[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::Type))]
 #[cfg_attr(not(target_arch = "wasm32"), sqlx(rename = "message_type"))]
 pub enum MessageType {
