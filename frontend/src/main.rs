@@ -5,7 +5,7 @@ mod websocket;
 
 use components::{Auth, Room as ShowRoom, RoomsList, UserAvatar};
 
-use crate::utils::use_on_mobile_listener;
+use crate::utils::is_on_mobile;
 use crate::websocket::{Connection, InternalEventBus, Request, Response};
 use common::websocket::{AuthenticatedPayload, OpCode};
 use common::{Message, Room, User};
@@ -107,7 +107,7 @@ impl SharedState for HomeProps {
 
 #[function_component(Home)]
 fn home(props: &HomeProps) -> Html {
-    let is_on_mobile = use_on_mobile_listener();
+    let is_on_mobile = is_on_mobile();
     console_log!("is_on_mobile", is_on_mobile);
 
     let router = use_ref(RouteAgentDispatcher::<()>::new);

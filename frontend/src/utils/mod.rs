@@ -12,7 +12,8 @@ pub fn use_token() -> Rc<String> {
     Rc::new(token)
 }
 
-pub fn use_on_mobile_listener() -> bool {
+// todo profile its performance
+/*pub fn _use_on_mobile_listener() -> bool {
     let (is_on_mobile, set_is_on_mobile) = use_state(|| {
         yew::utils::window()
             .match_media("(max-width: 600px)")
@@ -44,6 +45,14 @@ pub fn use_on_mobile_listener() -> bool {
     });
 
     *is_on_mobile
+}
+*/
+pub fn is_on_mobile() -> bool {
+    yew::utils::window()
+        .match_media("(max-width: 600px)")
+        .unwrap()
+        .unwrap()
+        .matches()
 }
 
 pub fn format_time(time: &DateTime<Utc>) -> String {
