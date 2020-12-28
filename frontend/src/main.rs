@@ -5,7 +5,7 @@ mod websocket;
 
 use components::{Auth, Room as ShowRoom, RoomsList, UserAvatar};
 
-use crate::utils::is_on_mobile;
+use crate::utils::{is_on_mobile, asset_url};
 use crate::websocket::{Connection, InternalEventBus, Request, Response};
 use common::websocket::{AuthenticatedPayload, OpCode};
 use common::{Message, Room, User};
@@ -25,10 +25,11 @@ use yew::services::StorageService;
 use yew_functional::{
     function_component, use_effect, use_effect_with_deps, use_ref, use_state, ContextProvider,
 };
-use yew_material::{MatDrawer, MatDrawerAppContent, WeakComponentLink};
+use yew_material::{MatDrawer, MatDrawerAppContent, MatMenu, WeakComponentLink, MatListItem, GraphicType, MatIcon};
 use yew_router::agent::RouteRequest;
 use yew_router::prelude::*;
 use yew_state::{SharedHandle, SharedState, SharedStateComponent};
+use yew_material::menu::Corner;
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -127,10 +128,40 @@ fn home(props: &HomeProps) -> Html {
         None
     };
 
+    let (menu_link, _) = use_state(WeakComponentLink::<MatMenu>::default);
+
     let user_avatar_action = if let Some(user) = &state.me {
-        html! {
-            <UserAvatar user=user />
-        }
+        let onclick = {
+            let menu_link = menu_link.clone();
+            Callback::from(move |_| menu_link.show())
+        };
+
+        let onload = {
+            let menu_link = menu_link.clone();
+            Callback::from(move |node_ref: NodeRef| {
+                let element = node_ref.cast::<web_sys::HtmlElement>().unwrap();
+                menu_link.set_anchor(element);
+                console_log!("set anchor");
+            })
+        };
+
+        html! {<>
+            <UserAvatar user=user show_details_on_click=false onclick=onclick onload=onload />
+            <MatMenu menu_link=&*menu_link corner=Corner::BottomRight>
+                <MatListItem graphic=GraphicType::Avatar noninteractive=true>
+                    <span>{ &user.username }</span>
+                    <img slot="graphic" src=asset_url(user.avatar.as_ref()) />
+                </MatListItem>
+                <li divider=true role="separator" />
+
+                <MatListItem graphic=GraphicType::Icon>
+                    <span>{ "Sign out" }</span>
+                    <span slot="graphic">
+                        <MatIcon>{ "exit_to_app" }</MatIcon>
+                    </span>
+                </MatListItem>
+            </MatMenu>
+        </>}
     } else {
         html!()
     };

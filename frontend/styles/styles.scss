@@ -262,3 +262,13 @@ mwc-dialog {
         }
     }
 }
+
+mwc-menu {
+    --mdc-list-item-graphic-margin: 1.5em;
+
+    mwc-list-item[graphic=avatar] {
+        span {
+            margin-left: 1em;
+        }
+    }
+}

@@ -4,7 +4,7 @@ use common::User;
 use std::cell::RefCell;
 use std::rc::Rc;
 use yew::prelude::*;
-use yew_functional::{function_component, use_state};
+use yew_functional::{function_component, use_state, use_effect};
 use yew_material::{
     dialog::{ActionType, MatDialogAction},
     MatButton, MatDialog, MatIconButton, WeakComponentLink,
@@ -16,6 +16,10 @@ pub struct UserAvatarProps {
     pub user: User,
     #[prop_or(true)]
     pub show_details_on_click: bool,
+    #[prop_or(None)]
+    pub onclick: Option<Callback<MouseEvent>>,
+    #[prop_or_default]
+    pub onload: Callback<NodeRef>,
 }
 
 #[function_component(UserAvatar)]
@@ -30,13 +34,28 @@ pub fn user_avatar(props: &UserAvatarProps) -> Html {
             })
         }
     } else {
-        Callback::noop()
+        props.onclick.clone().unwrap_or_default()
     };
 
     let on_dialog_closed = Callback::from(move |_| set_open(false));
+    let (node_ref, _) = use_state(NodeRef::default);
+
+    let _ = {
+        let node_ref = node_ref.clone();
+        let onload_prop = props.onload.clone();
+
+        use_effect(move || {
+            let span = yew::utils::document().get_element_by_id("user-avatar-container");
+            if let Some(span) = span {
+                onload_prop.emit((*node_ref).clone())
+            }
+
+            || ()
+        })
+    };
 
     html! {<>
-        <span class="user-avatar" onclick=onclick>
+        <span class="user-avatar" onclick=onclick id="user-avatar-container" ref=(*node_ref).clone()>
             <MatIconButton>
                 <img src=asset_url(props.user.avatar.as_ref()) />
             </MatIconButton>
