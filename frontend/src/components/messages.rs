@@ -3,7 +3,7 @@ use crate::services::room::fetch_room_messages;
 use crate::utils::use_token;
 use crate::websocket::{internal_events, InternalEventBus};
 use common::{Message, Room};
-use std::cell::RefMut;
+use std::cell::Ref;
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
@@ -15,12 +15,11 @@ pub struct MessagesProps {
 }
 
 #[derive(Copy, Clone, Debug)]
-enum LoadingState<T, E, C> {
+enum LoadingState<E> {
     NotLoading,
     Loading,
-    Loaded(T),
+    Loaded,
     Error(E),
-    NewContent(C),
 }
 
 #[function_component(RoomMessages)]
@@ -32,6 +31,7 @@ pub fn show_room_messages(props: &MessagesProps) -> Html {
 
     {
         let set_state = set_state.clone();
+        let messages = messages.clone();
 
         use_effect_with_deps(
             move |room_id| {
@@ -40,7 +40,12 @@ pub fn show_room_messages(props: &MessagesProps) -> Html {
                 let room_id = *room_id;
                 spawn_local(async move {
                     match fetch_room_messages(&*token, room_id).await {
-                        Ok(messages) => set_state(LoadingState::Loaded(messages)),
+                        Ok(rec_messages) => {
+                            let mut messages = messages.borrow_mut();
+                            messages.extend(rec_messages);
+                            drop(messages);
+                            set_state(LoadingState::Loaded)
+                        }
                         Err(e) => set_state(LoadingState::Error(e)),
                     }
                 });
@@ -53,6 +58,7 @@ pub fn show_room_messages(props: &MessagesProps) -> Html {
 
     {
         let set_state = Rc::clone(&set_state);
+        let messages = Rc::clone(&messages);
         let current_uuid = props.room.uuid;
 
         use_effect(move || {
@@ -60,7 +66,8 @@ pub fn show_room_messages(props: &MessagesProps) -> Html {
                 internal_events::Response::NewMessage(msg) => {
                     if msg.room.uuid == current_uuid {
                         weblog::console_log!("logging new message", msg.uuid.to_string());
-                        set_state(LoadingState::NewContent(msg))
+                        messages.borrow_mut().insert(0, (*msg).clone());
+                        set_state(LoadingState::Loaded)
                     }
                 }
             }));
@@ -75,19 +82,8 @@ pub fn show_room_messages(props: &MessagesProps) -> Html {
             messages.borrow_mut().clear();
             html!("loading")
         }
-        LoadingState::Loaded(data) => {
-            let mut messages = messages.borrow_mut();
-            data.iter().for_each(|it| messages.push(it.clone()));
-
-            display_messages(&mut messages)
-        }
+        LoadingState::Loaded => display_messages(messages.borrow()),
         LoadingState::Error(e) => html!(e.to_string()),
-        LoadingState::NewContent(message) => {
-            let mut messages = messages.borrow_mut();
-            messages.push((**message).clone());
-
-            display_messages(&mut messages)
-        }
     };
 
     html! {
@@ -97,11 +93,10 @@ pub fn show_room_messages(props: &MessagesProps) -> Html {
     }
 }
 
-fn display_messages(messages: &mut RefMut<Vec<Message>>) -> Html {
-    messages.sort_by(|a, b| b.created_at.partial_cmp(&a.created_at).unwrap());
+fn display_messages(messages: Ref<Vec<Message>>) -> Html {
     let messages = messages
         .iter()
-        .map(|message| html! {<SingleMessage message=message />});
+        .map(|message| html! { <SingleMessage key=message.uuid.to_string() message=message /> });
 
     html! { for messages }
 }

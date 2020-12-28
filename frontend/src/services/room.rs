@@ -1,4 +1,5 @@
 use crate::request;
+use crate::services::request::NoContent;
 use common::payloads::{CreateMessage, CreateRoom, JoinMembers};
 use common::{Message, Room, RoomMember, User};
 use uuid::Uuid;
@@ -51,12 +52,21 @@ pub async fn join_room(token: &str, room_id: Uuid, username: &str) -> anyhow::Re
 }
 
 pub async fn fetch_room_messages(token: &str, room_id: Uuid) -> anyhow::Result<Vec<Message>> {
-    request!(
+    let res = request!(
         method = GET,
         url = format!("/api/rooms/{}/messages", room_id),
         token = token
     )
-    .await
+    .await;
+
+    weblog::console_log!(format!("res {:?}", res));
+    match res {
+        Ok(res) => Ok(res),
+        Err(e) => match e.downcast::<NoContent>() {
+            Ok(_) => Ok(vec![]),
+            Err(e) => Err(e),
+        },
+    }
 }
 
 pub async fn send_message(

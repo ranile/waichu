@@ -552,8 +552,8 @@
       ]
     }
   },
-  "ee6dabfd405cfa8a2ce8bceaaf957eb28f6f170ef5c787865f5138eac0b03de5": {
-    "query": "\nselect messages.uuid,\n       messages.content,\n       messages.room,\n       messages.created_at,\n       messages.type as \"type_: MessageType\",\n       u.username    as author_username,\n       u.uuid        as author_uuid,\n       u.password    as author_password,\n       u.created_at  as author_created_at,\n       u.avatar      as author_avatar,\n       a.uuid        as \"asset_uuid?\",\n       a.created_at  as \"asset_created_at?\"\nfrom messages\n         left join users u on u.uuid = messages.author\n         left join assets a on u.avatar = u.avatar\nwhere room = $1;\n    ",
+  "f55cc498820163c3e84ffa771748fe5863f9e77884d31cf6bc0f401fcda9467d": {
+    "query": "\nselect messages.uuid,\n       messages.content,\n       messages.room,\n       messages.created_at,\n       messages.type as \"type_: MessageType\",\n       u.username    as author_username,\n       u.uuid        as author_uuid,\n       u.password    as author_password,\n       u.created_at  as author_created_at,\n       u.avatar      as author_avatar,\n       a.uuid        as \"asset_uuid?\",\n       a.created_at  as \"asset_created_at?\"\nfrom messages\n         left join users u on u.uuid = messages.author\n         left join assets a on u.avatar = u.avatar\nwhere room = $1\norder by messages.created_at desc ;\n    ",
     "describe": {
       "columns": [
         {

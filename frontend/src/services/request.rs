@@ -1,9 +1,11 @@
 use crate::CLIENT as client;
+use anyhow::Context;
 use common::errors::ApiError;
 use reqwest::header::AUTHORIZATION;
-use reqwest::Method;
+use reqwest::{Method, StatusCode};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use std::fmt;
 
 fn url(route: impl Into<String>) -> String {
     let base = yew::utils::window().location().origin().unwrap();
@@ -23,6 +25,16 @@ fn to_sentence_case(input: &str) -> String {
         .collect::<Vec<String>>()
         .join(" ")
 }
+
+#[derive(Debug, Clone)]
+pub struct NoContent;
+
+impl fmt::Display for NoContent {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "server returned 204")
+    }
+}
+
 pub async fn request<T: Serialize, R: DeserializeOwned>(
     request_url: impl Into<String>,
     method: Method,
@@ -44,9 +56,14 @@ pub async fn request<T: Serialize, R: DeserializeOwned>(
     }
 
     let resp = builder.send().await?;
-
-    if resp.status().is_success() {
-        Ok(resp.json::<R>().await?)
+    let status = resp.status();
+    if status.is_success() {
+        let res = resp.json::<R>().await;
+        if status == StatusCode::NO_CONTENT {
+            res.context(NoContent)
+        } else {
+            Ok(res?)
+        }
     } else {
         let error = resp.json::<ApiError>().await?;
         Err(anyhow::anyhow!("{}", to_sentence_case(&error.message)))

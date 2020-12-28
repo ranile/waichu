@@ -5,7 +5,7 @@ mod websocket;
 
 use components::{Auth, Room as ShowRoom, RoomsList, UserAvatar};
 
-use crate::utils::{is_on_mobile, asset_url};
+use crate::utils::{asset_url, is_on_mobile};
 use crate::websocket::{Connection, InternalEventBus, Request, Response};
 use common::websocket::{AuthenticatedPayload, OpCode};
 use common::{Message, Room, User};
@@ -25,11 +25,13 @@ use yew::services::StorageService;
 use yew_functional::{
     function_component, use_effect, use_effect_with_deps, use_ref, use_state, ContextProvider,
 };
-use yew_material::{MatDrawer, MatDrawerAppContent, MatMenu, WeakComponentLink, MatListItem, GraphicType, MatIcon};
+use yew_material::menu::Corner;
+use yew_material::{
+    GraphicType, MatDrawer, MatDrawerAppContent, MatIcon, MatListItem, MatMenu, WeakComponentLink,
+};
 use yew_router::agent::RouteRequest;
 use yew_router::prelude::*;
 use yew_state::{SharedHandle, SharedState, SharedStateComponent};
-use yew_material::menu::Corner;
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;

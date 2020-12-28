@@ -4,7 +4,7 @@ use common::User;
 use std::cell::RefCell;
 use std::rc::Rc;
 use yew::prelude::*;
-use yew_functional::{function_component, use_state, use_effect};
+use yew_functional::{function_component, use_effect, use_state};
 use yew_material::{
     dialog::{ActionType, MatDialogAction},
     MatButton, MatDialog, MatIconButton, WeakComponentLink,
@@ -46,7 +46,7 @@ pub fn user_avatar(props: &UserAvatarProps) -> Html {
 
         use_effect(move || {
             let span = yew::utils::document().get_element_by_id("user-avatar-container");
-            if let Some(span) = span {
+            if span.is_some() {
                 onload_prop.emit((*node_ref).clone())
             }
 

@@ -69,7 +69,8 @@ select messages.uuid,
 from messages
          left join users u on u.uuid = messages.author
          left join assets a on u.avatar = u.avatar
-where room = $1;
+where room = $1
+order by messages.created_at desc ;
     "#,
         room.uuid
     )
