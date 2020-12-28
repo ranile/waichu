@@ -27,7 +27,8 @@ use yew_functional::{
 };
 use yew_material::menu::Corner;
 use yew_material::{
-    GraphicType, MatDrawer, MatDrawerAppContent, MatIcon, MatListItem, MatMenu, WeakComponentLink,
+    GraphicType, ListIndex, MatDrawer, MatDrawerAppContent, MatIcon, MatListItem, MatMenu,
+    WeakComponentLink,
 };
 use yew_router::agent::RouteRequest;
 use yew_router::prelude::*;
@@ -147,9 +148,33 @@ fn home(props: &HomeProps) -> Html {
             })
         };
 
+        let onaction = {
+            let reset_callback = props.handle.reduce_callback(move |state| {
+                state.token = None;
+                state.rooms = Rc::new(RefCell::new(vec![]));
+                state.me = None;
+            });
+
+            Callback::from(move |list_index| {
+                if let ListIndex::Single(Some(index)) = list_index {
+                    console_log!("index", format!("{}", index));
+                    if index == 0 {
+                        console_log!("sign out");
+                        let window = yew::utils::window();
+                        window.local_storage().unwrap().unwrap().clear().unwrap();
+
+                        reset_callback.emit(());
+                        window.location().reload().unwrap();
+                    };
+                } else {
+                    unreachable!("menu isn't multi so index should be single")
+                }
+            })
+        };
+
         html! {<>
             <UserAvatar user=user show_details_on_click=false onclick=onclick onload=onload />
-            <MatMenu menu_link=&*menu_link corner=Corner::BottomRight>
+            <MatMenu menu_link=&*menu_link corner=Corner::BottomRight onaction=onaction>
                 <MatListItem graphic=GraphicType::Avatar noninteractive=true>
                     <span>{ &user.username }</span>
                     <img slot="graphic" src=asset_url(user.avatar.as_ref()) />

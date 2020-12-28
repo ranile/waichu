@@ -4,7 +4,6 @@ use common::{Message, MessageType};
 use yew::prelude::*;
 use yew_functional::{function_component, use_state};
 use yew_md::Markdown;
-use yew_state::SharedStateComponent;
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct SingleMessageProp {
@@ -44,7 +43,7 @@ pub fn show_single_message(props: &SingleMessageProp) -> Html {
                 <UserAvatar user=&message.author show_details_on_click=false />
                 <span>{ &message.author.username }{ " just joined" }</span>
                 <span class="timestamp">{ time }</span>
-                <SharedStateComponent<UserProfileDialog> user=&message.author open=*dialog_open onclosed=on_dialog_closed />
+                <UserProfileDialog user=&message.author open=*dialog_open onclosed=on_dialog_closed />
             </article>
         },
         MessageType::RoomLeave => html! {},
