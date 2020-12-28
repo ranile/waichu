@@ -1,7 +1,8 @@
 use crate::websocket;
 use common::websocket::{MessagePayload, OpCode};
-use common::{Message, MessageType, Room, User};
+use common::{Asset, Message, MessageType, Room, User};
 use sqlx::PgConnection;
+use std::str::FromStr;
 use std::sync::Arc;
 
 pub async fn create(db: &mut PgConnection, message: Message) -> anyhow::Result<Message> {
@@ -52,18 +53,23 @@ pub async fn create(db: &mut PgConnection, message: Message) -> anyhow::Result<M
 
 pub async fn get_all(conn: &mut PgConnection, room: &Room) -> anyhow::Result<Vec<Message>> {
     let returned = sqlx::query!(
-        r#"select messages.uuid,
-               messages.content,
-               messages.room,
-               messages.created_at,
-               messages.type as "type_: MessageType",
-               u.username   as author_username,
-               u.uuid       as author_uuid,
-               u.password   as author_password,
-               u.created_at as author_created_at
-        from messages
-                 left join users u on u.uuid = author
-        where room = $1;
+        r#"
+select messages.uuid,
+       messages.content,
+       messages.room,
+       messages.created_at,
+       messages.type as "type_: MessageType",
+       u.username    as author_username,
+       u.uuid        as author_uuid,
+       u.password    as author_password,
+       u.created_at  as author_created_at,
+       u.avatar      as author_avatar,
+       a.uuid        as "asset_uuid?",
+       a.created_at  as "asset_created_at?"
+from messages
+         left join users u on u.uuid = messages.author
+         left join assets a on u.avatar = u.avatar
+where room = $1;
     "#,
         room.uuid
     )
@@ -79,6 +85,15 @@ pub async fn get_all(conn: &mut PgConnection, room: &Room) -> anyhow::Result<Vec
                 username: value.author_username,
                 password: value.author_password,
                 created_at: value.author_created_at,
+                avatar: match value.asset_uuid {
+                    Some(_) => Some(Asset {
+                        mime: mime::Mime::from_str("image/jpeg").unwrap(),
+                        uuid: value.asset_uuid.unwrap(),
+                        bytes: Arc::new(vec![]),
+                        created_at: value.asset_created_at.unwrap(),
+                    }),
+                    None => None,
+                },
             },
             room: room.clone(),
             content: value.content,

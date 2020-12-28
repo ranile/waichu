@@ -1,7 +1,6 @@
-use crate::components::user_avatar::PROFILE_PICTURE_URL;
 use crate::components::{CreateMessage, RoomMessages};
 use crate::services::room::{fetch_room_members, join_room};
-use crate::utils::{format_time, use_token};
+use crate::utils::{asset_url, format_time, use_token};
 use crate::{DATA_THEME_ATTR, PREFERS_DARK_KEY};
 use common::User;
 use std::rc::Rc;
@@ -73,7 +72,9 @@ fn top_room_bar(props: &TopRoomBarProps) -> Html {
                 .store(PREFERS_DARK_KEY, Ok("true".to_string()));
             "dark"
         } else {
-            storage_service.borrow_mut().remove(PREFERS_DARK_KEY);
+            storage_service
+                .borrow_mut()
+                .store(PREFERS_DARK_KEY, Ok("false".to_string()));
             "default"
         };
 
@@ -122,7 +123,7 @@ struct UserCardProps {
 fn user_card(props: &UserCardProps) -> Html {
     html! {
         <article>
-            <img src=PROFILE_PICTURE_URL />
+            <img src=asset_url(props.user.avatar.as_ref()) />
             <span>{ &props.user.username }</span>
         </article>
     }
@@ -250,10 +251,14 @@ pub fn show_room(props: &ShowRoomProps) -> Html {
         </section>
 
         <MatDialog
-            heading=&room.name
+            // heading=&room.name
             dialog_link=&*dialog_link
             // onclosed=on_dialog_closed TODO fix yew-material coz ya boi an idiot
         >
+            <h2>
+                <img src=asset_url(room.icon.as_ref()) />
+                { &room.name }
+            </h2>
             <section class="room-info">
                 <section class="room-members-container">
                     <header>

@@ -58,7 +58,7 @@ impl Default for AppState {
         let token = service.restore::<Text>(TOKEN_KEY).ok();
         let prefers_dark = service
             .restore::<Text>(PREFERS_DARK_KEY)
-            .map(|_| true)
+            .map(|it| it.parse::<bool>().unwrap_or(false))
             .unwrap_or_else(|_| {
                 let media = yew::utils::window()
                     .match_media("(prefers-color-scheme: dark)")

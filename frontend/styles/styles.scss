@@ -8,6 +8,7 @@ body[data-theme=default] {
     --mdc-theme-error: #b00020;
 
     --hover-color: rgba(0, 0, 0, 0.1);
+    --border-color: rgba(0, 0, 0, 0.12);
 }
 
 mwc-drawer {
@@ -16,6 +17,20 @@ mwc-drawer {
 
 mwc-dialog {
     --mdc-dialog-min-width: 35vw;
+
+    h2 {
+        padding-bottom: 0.5em;
+        border-bottom: 1px solid var(--border-color);
+
+        display: flex;
+        gap: 0.3em;
+
+        font-size: 1.3em;
+        img {
+            height: 1.3em;
+            border-radius: 50%;
+        }
+    }
 }
 
 .new-room mwc-button {
@@ -94,6 +109,10 @@ mwc-dialog {
 
     h2 {
         padding-left: 0.75em;
+    }
+
+    mwc-list-item img[slot=graphic] {
+        margin-right: 1em;
     }
 }
 

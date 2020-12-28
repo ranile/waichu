@@ -93,6 +93,7 @@ async fn test_signup() {
                 .unwrap();
 
             assert_eq!(user.username, username);
+            assert_eq!(user.avatar, None); // there shouldn't be anything at first
         })
     })
     .await

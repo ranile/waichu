@@ -1,10 +1,54 @@
 use crate::services;
-use common::User;
+use common::{Asset, User};
 use serde::export::Formatter;
 use sqlx::postgres::PgDatabaseError;
 use sqlx::types::Uuid;
 use sqlx::PgConnection;
 use std::fmt;
+use std::str::FromStr;
+
+macro_rules! get {
+    ($db:ident, $sel_col:expr, $value:expr) => {{
+        let res = sqlx::query!(
+            r#"
+select users.username as user_username,
+       users.uuid as user_uuid,
+       users.password as user_password,
+       users.created_at as user_created_at,
+       users.avatar as "user_avatar?",
+       assets.uuid as "asset_uuid?",
+       assets.created_at as "asset_created_at?"
+from users
+         left join assets on users.avatar = assets.uuid
+where "# + $sel_col
+                + " = $1;",
+            $value
+        )
+        .fetch_one($db)
+        .await;
+
+        let user = match res {
+            Ok(res) => Ok(User {
+                uuid: res.user_uuid,
+                username: res.user_username,
+                password: res.user_password,
+                created_at: res.user_created_at,
+                avatar: match res.user_avatar {
+                    Some(_) => Some(Asset {
+                        mime: mime::Mime::from_str("image/jpeg").unwrap(),
+                        uuid: res.asset_uuid.unwrap(),
+                        bytes: Default::default(),
+                        created_at: res.asset_created_at.unwrap(),
+                    }),
+                    None => None,
+                },
+            }),
+            Err(e) => Err(e),
+        };
+
+        services::optional_value_or_err(user)
+    }};
+}
 
 #[derive(Debug, Clone)]
 pub(crate) struct UserAlreadyExists(pub(crate) String);
@@ -23,8 +67,7 @@ pub async fn create(db: &mut PgConnection, user: User) -> anyhow::Result<User> {
         ..
     } = user;
 
-    let result = sqlx::query_as!(
-        User,
+    let result = sqlx::query!(
         "
             insert into users(username, uuid, password)
             values ($1, $2, $3)
@@ -38,7 +81,13 @@ pub async fn create(db: &mut PgConnection, user: User) -> anyhow::Result<User> {
     .await;
 
     match result {
-        Ok(user) => Ok(user),
+        Ok(res) => Ok(User {
+            uuid: res.uuid,
+            username: res.username,
+            password: res.password,
+            created_at: res.created_at,
+            avatar: None,
+        }),
         Err(sqlx::Error::Database(db_error)) => {
             let db_error = db_error.downcast::<PgDatabaseError>();
 
@@ -56,36 +105,40 @@ pub async fn create(db: &mut PgConnection, user: User) -> anyhow::Result<User> {
 }
 
 pub async fn get(db: &mut PgConnection, uuid: Uuid) -> anyhow::Result<Option<User>> {
-    let user = sqlx::query_as!(
-        User,
-        "
-            select *
-            from users
-            where uuid = $1;
-        ",
-        uuid
-    )
-    .fetch_one(db)
-    .await;
-
-    services::optional_value_or_err(user)
+    get!(db, "users.uuid", uuid)
 }
 
 pub async fn get_by_username(
     db: &mut PgConnection,
     username: &str,
 ) -> anyhow::Result<Option<User>> {
-    let user = sqlx::query_as!(
+    get!(db, "username", username)
+}
+
+pub async fn update(db: &mut PgConnection, user: User) -> anyhow::Result<User> {
+    let User {
+        uuid,
+        username,
+        avatar,
+        ..
+    } = user;
+
+    let avatar = avatar.map(|it| it.uuid);
+
+    sqlx::query_as!(
         User,
         "
-            select *
-            from users
-            where username = $1;
+update users
+set username   = $1,
+    avatar     = $2
+where uuid = $3;
         ",
-        username
+        username,
+        avatar,
+        uuid,
     )
-    .fetch_one(db)
-    .await;
+    .execute(&mut *db)
+    .await?;
 
-    services::optional_value_or_err(user)
+    get(db, uuid).await.map(|it| it.unwrap())
 }

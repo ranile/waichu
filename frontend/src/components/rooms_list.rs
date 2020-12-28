@@ -1,4 +1,5 @@
 use crate::services::room::create_room;
+use crate::utils::asset_url;
 use crate::{AppRoute, AppState};
 use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
@@ -8,7 +9,7 @@ use yew::services::DialogService;
 use yew_functional::{function_component, use_ref, use_state};
 use yew_material::{
     dialog::{ActionType, MatDialogAction},
-    MatButton, MatDialog, MatList, MatListItem, MatTextField, WeakComponentLink,
+    GraphicType, MatButton, MatDialog, MatList, MatListItem, MatTextField, WeakComponentLink,
 };
 use yew_router::agent::RouteRequest;
 use yew_router::prelude::*;
@@ -36,7 +37,10 @@ pub fn rooms_list(handle: &SharedHandle<AppState>) -> Html {
             html! {
                 // MatListItem must be outside for activatable to work
                 <span onclick=&onclick>
-                     <MatListItem>{ &room.name }</MatListItem>
+                     <MatListItem graphic=GraphicType::Avatar>
+                        { &room.name }
+                        <img slot="graphic" src=asset_url(room.icon.as_ref()) />
+                     </MatListItem>
                 </span>
             }
         })

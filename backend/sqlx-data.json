@@ -1,84 +1,5 @@
 {
   "db": "PostgreSQL",
-  "00bab3778a96aa952c22809a8767f18e7b98a544307f78a925c0cae33cd4ebb0": {
-    "query": "select messages.uuid,\n               messages.content,\n               messages.room,\n               messages.created_at,\n               messages.type as \"type_: MessageType\",\n               u.username   as author_username,\n               u.uuid       as author_uuid,\n               u.password   as author_password,\n               u.created_at as author_created_at\n        from messages\n                 left join users u on u.uuid = author\n        where room = $1;\n    ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "uuid",
-          "type_info": "Uuid"
-        },
-        {
-          "ordinal": 1,
-          "name": "content",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "room",
-          "type_info": "Uuid"
-        },
-        {
-          "ordinal": 3,
-          "name": "created_at",
-          "type_info": "Timestamptz"
-        },
-        {
-          "ordinal": 4,
-          "name": "type_: MessageType",
-          "type_info": {
-            "Custom": {
-              "name": "message_type",
-              "kind": {
-                "Enum": [
-                  "default",
-                  "room_join",
-                  "room_leave"
-                ]
-              }
-            }
-          }
-        },
-        {
-          "ordinal": 5,
-          "name": "author_username",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 6,
-          "name": "author_uuid",
-          "type_info": "Uuid"
-        },
-        {
-          "ordinal": 7,
-          "name": "author_password",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 8,
-          "name": "author_created_at",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "0101d252028eed262781dc3770402575b6ca1682d78ac39bf08d018824df897e": {
     "query": "\n            select r.*\n            from room_members\n                left join rooms r on r.uuid = room_members.room_id\n            where user_id = $1;\n        ",
     "describe": {
@@ -97,6 +18,11 @@
           "ordinal": 2,
           "name": "created_at",
           "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 3,
+          "name": "icon",
+          "type_info": "Uuid"
         }
       ],
       "parameters": {
@@ -107,32 +33,100 @@
       "nullable": [
         false,
         false,
-        false
+        false,
+        true
       ]
     }
   },
-  "0c0cca1e0df11f10e520e0f3c66d68e2e3e1518b2814641031c178751ac02d3a": {
-    "query": "\n            select *\n            from users\n            where username = $1;\n        ",
+  "03f71be6dcb051dad06a4d1a23283bac0098323110050d0fa5d0c980367d5de2": {
+    "query": "insert into assets (uuid) values ($1) returning *;",
     "describe": {
       "columns": [
         {
           "ordinal": 0,
-          "name": "username",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 1,
           "name": "uuid",
           "type_info": "Uuid"
         },
         {
+          "ordinal": 1,
+          "name": "created_at",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      },
+      "nullable": [
+        false,
+        false
+      ]
+    }
+  },
+  "0e66ed3b381c8d6e69b3052dfdea118ef95c46e9b16c9f936f1dc84b4109f53a": {
+    "query": "\nupdate rooms\nset name     = $1,\n    icon     = $2\nwhere uuid = $3;\n        ",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Uuid",
+          "Uuid"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "1247b7ca39fb71c59f2e1f1d5e2b84549666c1bc912595177e2a3525ed38d185": {
+    "query": "delete from assets where uuid = $1;",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "3afa678b7053f4af3c98926912cb9c98e5234ebd1175cbc4e3edc022445b0acf": {
+    "query": "\nselect users.username as user_username,\n       users.uuid as user_uuid,\n       users.password as user_password,\n       users.created_at as user_created_at,\n       users.avatar as \"user_avatar?\",\n       assets.uuid as \"asset_uuid?\",\n       assets.created_at as \"asset_created_at?\"\nfrom users\n         left join assets on users.avatar = assets.uuid\nwhere username = $1;",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "user_username",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_uuid",
+          "type_info": "Uuid"
+        },
+        {
           "ordinal": 2,
-          "name": "password",
+          "name": "user_password",
           "type_info": "Text"
         },
         {
           "ordinal": 3,
-          "name": "created_at",
+          "name": "user_created_at",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 4,
+          "name": "user_avatar?",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 5,
+          "name": "asset_uuid?",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 6,
+          "name": "asset_created_at?",
           "type_info": "Timestamptz"
         }
       ],
@@ -145,43 +139,8 @@
         false,
         false,
         false,
-        false
-      ]
-    }
-  },
-  "0e10ce6299dc8b1458959c6ffa9b855023ce2f32f17ed3b3e204a0bd3d928263": {
-    "query": "\n            select *\n            from users\n            where uuid = $1;\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "username",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 1,
-          "name": "uuid",
-          "type_info": "Uuid"
-        },
-        {
-          "ordinal": 2,
-          "name": "password",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "created_at",
-          "type_info": "Timestamptz"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      },
-      "nullable": [
         false,
-        false,
+        true,
         false,
         false
       ]
@@ -210,6 +169,11 @@
           "ordinal": 3,
           "name": "created_at",
           "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 4,
+          "name": "avatar",
+          "type_info": "Uuid"
         }
       ],
       "parameters": {
@@ -223,7 +187,8 @@
         false,
         false,
         false,
-        false
+        false,
+        true
       ]
     }
   },
@@ -337,6 +302,76 @@
       ]
     }
   },
+  "8de863e8b22a603fdbf4433c5fac7cae2d109134917b7d65bfa78b5a2edb8c7e": {
+    "query": "\n            select u.username   as user_username,\n                   u.uuid       as user_uuid,\n                   u.password   as user_password,\n                   u.created_at as user_created_at,\n                   u.avatar as user_avatar,\n                   has_elevated_permissions,\n                   joined_at\n            from room_members\n            left join rooms r on r.uuid = room_members.room_id\n            left join users u on u.uuid = room_members.user_id\n            where room_id = $1;\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "user_username",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 1,
+          "name": "user_uuid",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 2,
+          "name": "user_password",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "user_created_at",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 4,
+          "name": "user_avatar",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 5,
+          "name": "has_elevated_permissions",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 6,
+          "name": "joined_at",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    }
+  },
+  "912ebbe06a2be41726a11779a7e4d53fd9ca476a3a04f710de3c71542cd040db": {
+    "query": "\nupdate users\nset username   = $1,\n    avatar     = $2\nwhere uuid = $3;\n        ",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Uuid",
+          "Uuid"
+        ]
+      },
+      "nullable": []
+    }
+  },
   "935a7713ce02ecc3dc9c51bdbf0eb696c84bebb4982fc4f51833f936b276b334": {
     "query": "\n                select (count(*) = 1) as is_in_room\n                from room_members\n                where room_id = $1\n                  and user_id = $2;\n            ",
     "describe": {
@@ -376,6 +411,11 @@
           "ordinal": 2,
           "name": "created_at",
           "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 3,
+          "name": "icon",
+          "type_info": "Uuid"
         }
       ],
       "parameters": {
@@ -386,6 +426,33 @@
       },
       "nullable": [
         false,
+        false,
+        false,
+        true
+      ]
+    }
+  },
+  "bab15677d012a9880cee58366b63cbd2284b894354ef77d3c709b264e1193a63": {
+    "query": "select * from assets where uuid = $1;",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "uuid",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 1,
+          "name": "created_at",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      },
+      "nullable": [
         false,
         false
       ]
@@ -409,6 +476,11 @@
           "ordinal": 2,
           "name": "created_at",
           "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 3,
+          "name": "icon",
+          "type_info": "Uuid"
         }
       ],
       "parameters": {
@@ -419,12 +491,13 @@
       "nullable": [
         false,
         false,
-        false
+        false,
+        true
       ]
     }
   },
-  "ebc2a96d581816639fc0ef036b04d94090eafb03afc9166035906984c2e7337b": {
-    "query": "\n            select u.username   as user_username,\n                   u.uuid       as user_uuid,\n                   u.password   as user_password,\n                   u.created_at as user_created_at,\n                   has_elevated_permissions,\n                   joined_at\n            from room_members\n            left join rooms r on r.uuid = room_members.room_id\n            left join users u on u.uuid = room_members.user_id\n            where room_id = $1;\n        ",
+  "e5501a8bd0a2918c5f8d334cae35be48c83db6f3368171b4a66332fddadd32e7": {
+    "query": "\nselect users.username as user_username,\n       users.uuid as user_uuid,\n       users.password as user_password,\n       users.created_at as user_created_at,\n       users.avatar as \"user_avatar?\",\n       assets.uuid as \"asset_uuid?\",\n       assets.created_at as \"asset_created_at?\"\nfrom users\n         left join assets on users.avatar = assets.uuid\nwhere users.uuid = $1;",
     "describe": {
       "columns": [
         {
@@ -449,12 +522,17 @@
         },
         {
           "ordinal": 4,
-          "name": "has_elevated_permissions",
-          "type_info": "Bool"
+          "name": "user_avatar?",
+          "type_info": "Uuid"
         },
         {
           "ordinal": 5,
-          "name": "joined_at",
+          "name": "asset_uuid?",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 6,
+          "name": "asset_created_at?",
           "type_info": "Timestamptz"
         }
       ],
@@ -468,6 +546,104 @@
         false,
         false,
         false,
+        true,
+        false,
+        false
+      ]
+    }
+  },
+  "ee6dabfd405cfa8a2ce8bceaaf957eb28f6f170ef5c787865f5138eac0b03de5": {
+    "query": "\nselect messages.uuid,\n       messages.content,\n       messages.room,\n       messages.created_at,\n       messages.type as \"type_: MessageType\",\n       u.username    as author_username,\n       u.uuid        as author_uuid,\n       u.password    as author_password,\n       u.created_at  as author_created_at,\n       u.avatar      as author_avatar,\n       a.uuid        as \"asset_uuid?\",\n       a.created_at  as \"asset_created_at?\"\nfrom messages\n         left join users u on u.uuid = messages.author\n         left join assets a on u.avatar = u.avatar\nwhere room = $1;\n    ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "uuid",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 1,
+          "name": "content",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "room",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 3,
+          "name": "created_at",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 4,
+          "name": "type_: MessageType",
+          "type_info": {
+            "Custom": {
+              "name": "message_type",
+              "kind": {
+                "Enum": [
+                  "default",
+                  "room_join",
+                  "room_leave"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "ordinal": 5,
+          "name": "author_username",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 6,
+          "name": "author_uuid",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 7,
+          "name": "author_password",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 8,
+          "name": "author_created_at",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 9,
+          "name": "author_avatar",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 10,
+          "name": "asset_uuid?",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 11,
+          "name": "asset_created_at?",
+          "type_info": "Timestamptz"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
         false,
         false
       ]

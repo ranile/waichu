@@ -8,8 +8,7 @@ use std::sync::Arc;
 pub async fn create(db: &mut PgConnection, room: Room) -> anyhow::Result<Room> {
     let Room { name, uuid, .. } = room;
 
-    Ok(sqlx::query_as!(
-        Room,
+    let room = sqlx::query!(
         "
             insert into rooms(name, uuid)
             values ($1, $2)
@@ -19,12 +18,17 @@ pub async fn create(db: &mut PgConnection, room: Room) -> anyhow::Result<Room> {
         uuid
     )
     .fetch_one(db)
-    .await?)
+    .await?;
+    Ok(Room {
+        uuid: room.uuid,
+        name: room.name,
+        created_at: room.created_at,
+        icon: None,
+    })
 }
 
 pub async fn get(db: &mut PgConnection, uuid: Uuid) -> anyhow::Result<Option<Room>> {
-    let result = sqlx::query_as!(
-        Room,
+    let result = sqlx::query!(
         "
             select *
             from rooms
@@ -32,8 +36,18 @@ pub async fn get(db: &mut PgConnection, uuid: Uuid) -> anyhow::Result<Option<Roo
         ",
         uuid
     )
-    .fetch_one(db)
+    .fetch_one(&mut *db)
     .await;
+
+    let result = match result {
+        Ok(room) => Ok(Room {
+            uuid: room.uuid,
+            name: room.name,
+            created_at: room.created_at,
+            icon: services::asset::get_from_option(db, room.icon).await?,
+        }),
+        Err(e) => Err(e),
+    };
 
     services::optional_value_or_err(result)
 }
@@ -105,8 +119,7 @@ pub async fn user_in_room(db: &mut PgConnection, room: &Room, user: &User) -> an
 }
 
 pub async fn get_with_user(db: &mut PgConnection, user: &User) -> anyhow::Result<Vec<Room>> {
-    Ok(sqlx::query_as!(
-        Room,
+    let res = sqlx::query!(
         "
             select r.*
             from room_members
@@ -115,8 +128,20 @@ pub async fn get_with_user(db: &mut PgConnection, user: &User) -> anyhow::Result
         ",
         user.uuid
     )
-    .fetch_all(db)
-    .await?)
+    .fetch_all(&mut *db)
+    .await?;
+
+    let mut rooms = vec![];
+    for room in res {
+        rooms.push(Room {
+            uuid: room.uuid,
+            name: room.name,
+            created_at: room.created_at,
+            icon: services::asset::get_from_option(db, room.icon).await?,
+        });
+    }
+
+    Ok(rooms)
 }
 
 pub async fn get_room_members(
@@ -129,6 +154,7 @@ pub async fn get_room_members(
                    u.uuid       as user_uuid,
                    u.password   as user_password,
                    u.created_at as user_created_at,
+                   u.avatar as user_avatar,
                    has_elevated_permissions,
                    joined_at
             from room_members
@@ -138,23 +164,50 @@ pub async fn get_room_members(
         ",
         room.uuid
     )
-    .fetch_all(db)
+    .fetch_all(&mut *db)
     .await?;
 
-    let mapped = returned
-        .into_iter()
-        .map(|value| RoomMember {
+    let mut mapped = Vec::with_capacity(returned.len());
+
+    for value in returned.into_iter() {
+        mapped.push(RoomMember {
             user: User {
                 uuid: value.user_uuid,
                 username: value.user_username,
                 password: value.user_password,
                 created_at: value.user_created_at,
+                avatar: services::asset::get_from_option(db, value.user_avatar).await?,
             },
             room: room.clone(),
             has_elevated_permissions: value.has_elevated_permissions,
             joined_at: value.joined_at,
         })
-        .collect::<Vec<RoomMember>>();
+    }
 
     Ok(mapped)
+}
+
+pub async fn update(db: &mut PgConnection, room: Room) -> anyhow::Result<Room> {
+    let Room {
+        uuid, name, icon, ..
+    } = room;
+
+    let icon = icon.map(|it| it.uuid);
+
+    sqlx::query_as!(
+        Room,
+        "
+update rooms
+set name     = $1,
+    icon     = $2
+where uuid = $3;
+        ",
+        name,
+        icon,
+        uuid,
+    )
+    .execute(&mut *db)
+    .await?;
+
+    get(db, uuid).await.map(|it| it.unwrap())
 }

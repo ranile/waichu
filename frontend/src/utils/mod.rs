@@ -1,9 +1,9 @@
 use chrono::{DateTime, Datelike, Local, Utc};
+use common::Asset;
 use std::rc::Rc;
-use wasm_bindgen::prelude::*;
-use web_sys::MediaQueryList;
-use weblog::wasm_bindgen::JsCast;
-use yew_functional::{use_context, use_effect, use_state};
+use yew_functional::use_context;
+
+pub const PROFILE_PICTURE_URL: &str = "https://i.redd.it/j04fpwy2ea261.png";
 
 #[allow(clippy::rc_buffer)] // this needs to be Rc so I'm not cloning it a billion times
 pub fn use_token() -> Rc<String> {
@@ -83,4 +83,10 @@ pub fn format_time(time: &DateTime<Utc>) -> String {
     output += &*format!(", {}", local.time().format("%l:%M %p"));
 
     output.trim().to_string()
+}
+
+pub fn asset_url(asset: Option<&Asset>) -> String {
+    asset
+        .map(|asset| format!("http://localhost:9090/api/assets/{}", asset.uuid))
+        .unwrap_or_else(|| PROFILE_PICTURE_URL.to_string())
 }

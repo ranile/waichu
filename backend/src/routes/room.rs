@@ -1,10 +1,11 @@
-use crate::services;
 use crate::utils::{
-    ensure_authorized, error_reply, json_body, json_with_status, with_db, with_transaction,
+    ensure_authorized, error_reply, is_asset_image, json_body, json_with_status, with_db,
+    with_transaction, AssetExt,
 };
-use crate::{bail_if_err, bail_if_err_or_404, value_or_404};
+use crate::{bail_if_err, bail_if_err_or_404, update_fields, value_or_404};
+use crate::{services, utils};
 use common::payloads::{CreateRoom, JoinMembers};
-use common::{Room, RoomMember, User};
+use common::{Asset, Room, RoomMember, User};
 use sqlx::types::Uuid;
 use sqlx::PgPool;
 use warp::http::StatusCode;
@@ -102,6 +103,51 @@ async fn get_room_members(
     .await
 }
 
+pub async fn room_icon(
+    room: Uuid,
+    pool: PgPool,
+    user: User,
+    asset: Asset,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    with_transaction(pool, move |conn| {
+        Box::pin(async move {
+            if !is_asset_image(&asset) {
+                return Ok(error_reply(
+                    StatusCode::BAD_REQUEST,
+                    "asset must be a PNG, JPEG or BMP",
+                ));
+            }
+
+            let mut room = value_or_404!(services::room::get(&mut *conn, room).await?);
+            let is_in_room = services::room::user_in_room(&mut *conn, &room, &user).await?;
+
+            if !is_in_room {
+                return Ok(error_reply(
+                    StatusCode::FORBIDDEN,
+                    "either this room doesn't exist or you don't have permission to see it",
+                ));
+            }
+
+            if let Some(asset) = room.icon {
+                room.icon = None;
+                room = services::room::update(conn, room).await?;
+                services::asset::delete(conn, &asset).await?;
+                asset.delete().await?;
+            }
+
+            let asset = services::asset::create(conn, asset).await?;
+
+            update_fields!(room => icon = Some(asset.clone()));
+            let room = services::room::update(conn, room).await?;
+
+            asset.save().await?;
+
+            Ok(warp::reply::json(&room.icon.unwrap()).into_response())
+        })
+    })
+    .await
+}
+
 pub fn routes(
     db: PgPool,
 ) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
@@ -128,11 +174,19 @@ pub fn routes(
     let get_room_members_route = warp::path!("rooms" / Uuid / "members")
         .and(warp::get())
         .and(with_db(db.clone()))
-        .and(ensure_authorized(db))
+        .and(ensure_authorized(db.clone()))
         .and_then(get_room_members);
+
+    let room_icon_route = warp::path!("rooms" / Uuid / "icon")
+        .and(warp::put())
+        .and(with_db(db.clone()))
+        .and(ensure_authorized(db))
+        .and(utils::multipart())
+        .and_then(room_icon);
 
     get_room_route
         .or(create_room_route)
         .or(join_room_route)
         .or(get_room_members_route)
+        .or(room_icon_route)
 }

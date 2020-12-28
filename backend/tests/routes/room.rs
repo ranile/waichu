@@ -73,6 +73,8 @@ async fn test_create_room() {
 
             let (_, token) = create_authenticated_user(&mut conn, username, password).await;
 
+            let room_name = "room_name";
+
             let api = backend::api(pool);
 
             let resp = request()
@@ -80,14 +82,17 @@ async fn test_create_room() {
                 .path("/api/rooms/")
                 .header("Authorization", token)
                 .json(&CreateRoom {
-                    name: "room_name".to_string(),
+                    name: room_name.to_string(),
                 })
                 .reply(&api)
                 .await;
 
-            serde_json::from_slice::<Room>(resp.body()).expect("failed to parse response");
+            let room =
+                serde_json::from_slice::<Room>(resp.body()).expect("failed to parse response");
 
             assert_eq!(resp.status(), StatusCode::CREATED);
+            assert_eq!(room.name, room_name);
+            assert_eq!(room.icon, None); // there shouldn't be any icon at first
         })
     })
     .await

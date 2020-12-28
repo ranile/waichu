@@ -1,3 +1,4 @@
+use crate::utils::asset_url;
 use crate::AppState;
 use common::User;
 use std::cell::RefCell;
@@ -9,8 +10,6 @@ use yew_material::{
     MatButton, MatDialog, MatIconButton, WeakComponentLink,
 };
 use yew_state::{SharedHandle, SharedState, SharedStateComponent};
-
-pub const PROFILE_PICTURE_URL: &str = "https://i.redd.it/j04fpwy2ea261.png";
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct UserAvatarProps {
@@ -39,7 +38,7 @@ pub fn user_avatar(props: &UserAvatarProps) -> Html {
     html! {<>
         <span class="user-avatar" onclick=onclick>
             <MatIconButton>
-                <img src=PROFILE_PICTURE_URL />
+                <img src=asset_url(props.user.avatar.as_ref()) />
             </MatIconButton>
         </span>
         <SharedStateComponent<UserProfileDialog> user=&props.user open=*open onclosed=on_dialog_closed />
@@ -101,7 +100,7 @@ pub fn user_profile_dialog(props: &UserProfileDialogProps) -> Html {
                 // onclosed=on_dialog_closed TODO fix yew-material coz ya boi an idiot
             >
                 <section class="profile-dialog-container">
-                    <img src=PROFILE_PICTURE_URL />
+                    <img src=asset_url(props.user.avatar.as_ref()) />
                     <span>{ &props.user.username }</span>
                     <span onclick=logout_callback>
                         { logout_button }

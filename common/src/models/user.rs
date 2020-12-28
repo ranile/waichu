@@ -1,3 +1,4 @@
+use crate::Asset;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -9,6 +10,7 @@ pub struct User {
     #[serde(skip)]
     pub password: String,
     pub created_at: DateTime<Utc>,
+    pub avatar: Option<Asset>,
 }
 
 impl User {
@@ -18,6 +20,7 @@ impl User {
             username,
             password,
             created_at: Utc::now(),
+            avatar: None,
         }
     }
 
@@ -27,6 +30,7 @@ impl User {
             username: "username".to_string(),
             password: "".to_string(),
             created_at: Utc::now(),
+            avatar: None,
         }
     }
 }

@@ -58,6 +58,7 @@ macro_rules! bail_if_err_or_404 {
     }};
 }
 
+#[macro_export]
 #[cfg(debug_assertions)]
 macro_rules! debug_boxed {
     ($x:expr) => {
@@ -65,6 +66,7 @@ macro_rules! debug_boxed {
     };
 }
 
+#[macro_export]
 #[cfg(not(debug_assertions))]
 macro_rules! debug_boxed {
     ($x:expr) => {
@@ -109,6 +111,7 @@ macro_rules! debug_boxed {
 // - balanced_or_tree!(@internal a, b ; c, d, e ; e) // now only one elem in counter
 // - balanced_or_tree!(a, b, c).or(balanced_or_tree(d, e)) // recurse on each sublist
 // From: https://github.com/seanmonstar/warp/issues/619#issuecomment-662716377
+#[macro_export]
 macro_rules! balanced_or_tree {
     // Base case: just a single expression, return it wrapped in `debug_boxed`
     ($x:expr $(,)?) => { debug_boxed!($x) };
@@ -125,4 +128,13 @@ macro_rules! balanced_or_tree {
     (@internal $($left:expr),*; $head:expr, $($tail:expr),+; $a:expr, $b:expr, $($more:expr),+) => {
         balanced_or_tree!(@internal $($left,)* $head; $($tail),+; $($more),+)
     };
+}
+
+#[macro_export]
+macro_rules! update_fields {
+    ($field:ident => $($name:ident = $value:expr),+) => {{
+        $(
+            $field.$name = $value;
+        )+
+    }};
 }
