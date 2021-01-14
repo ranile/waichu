@@ -2,14 +2,12 @@ use crate::services::optional_value_or_err;
 use common::Asset;
 use sqlx::types::Uuid;
 use sqlx::PgConnection;
-use std::str::FromStr;
 use std::sync::Arc;
 
 macro_rules! construct_asset {
     ($asset:ident) => {{
         match $asset {
             Ok(asset) => Ok(Asset {
-                mime: mime::Mime::from_str("image/jpeg").unwrap(),
                 uuid: asset.uuid,
                 bytes: Arc::new(vec![]),
                 created_at: asset.created_at,

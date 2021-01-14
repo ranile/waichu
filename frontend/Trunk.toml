@@ -3,4 +3,10 @@ target = "index.html"
 dist = "../dist"
 
 [[proxy]]
-backend = "http://localhost:9090/api/"
+backend = "ws://localhost:9090/api/ws"
+path = "api/ws"
+ws = true
+
+[[proxy]]
+backend = "http://localhost:9090"
+path = "api"

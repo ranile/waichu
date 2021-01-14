@@ -9,7 +9,8 @@ use yew::services::DialogService;
 use yew_functional::{function_component, use_ref, use_state};
 use yew_material::{
     dialog::{ActionType, MatDialogAction},
-    GraphicType, MatButton, MatDialog, MatList, MatListItem, MatTextField, WeakComponentLink,
+    list::GraphicType,
+    MatButton, MatDialog, MatList, MatListItem, MatTextField, WeakComponentLink,
 };
 use yew_router::agent::RouteRequest;
 use yew_router::prelude::*;
@@ -82,7 +83,7 @@ pub fn rooms_list(handle: &SharedHandle<AppState>) -> Html {
         <MatDialog
             heading="Create room"
             dialog_link=&*dialog_link
-            // onclosed=on_dialog_closed TODO fix yew-material coz ya boi an idiot
+            // onclosed=on_dialog_closed TODO use action (see create action)
         >
             <section class="create-room-container">
                 <MatTextField

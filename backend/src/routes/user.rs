@@ -1,12 +1,9 @@
-use crate::utils::{
-    ensure_authorized, error_reply, is_asset_image, with_db, with_transaction, AssetExt,
-};
+use crate::utils::{ensure_authorized, with_db, with_transaction, AssetExt};
 use crate::{bail_if_err, bail_if_err_or_404, update_fields};
 use crate::{services, utils};
 use common::{Asset, User};
 use sqlx::types::Uuid;
 use sqlx::PgPool;
-use warp::http::StatusCode;
 use warp::{Filter, Reply};
 
 async fn get_user(uuid: Uuid, pool: PgPool) -> Result<impl warp::Reply, warp::Rejection> {
@@ -38,13 +35,6 @@ async fn update_avatar(
 ) -> Result<impl warp::Reply, warp::Rejection> {
     with_transaction(pool, |conn| {
         Box::pin(async move {
-            if !is_asset_image(&asset) {
-                return Ok(error_reply(
-                    StatusCode::BAD_REQUEST,
-                    "asset must be a PNG, JPEG or BMP",
-                ));
-            }
-
             if let Some(asset) = user.avatar {
                 user.avatar = None;
                 user = services::user::update(conn, user).await?;

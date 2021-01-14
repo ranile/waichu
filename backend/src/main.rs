@@ -20,13 +20,14 @@ async fn main() {
 
     let routes = balanced_or_tree!(api, spa);
     // .with(warp::compression::gzip());
+    let routes = routes.with(warp::log("log"));
 
     #[cfg(debug_assertions)]
     let routes = routes.with(
         warp::cors()
             .allow_any_origin()
             .allow_methods(vec!["GET", "POST", "OPTIONS"])
-            .allow_headers(vec!["authorization"]),
+            .allow_headers(vec!["authorization", "content-type"]),
     );
 
     let port = env::var("PORT")

@@ -3,7 +3,7 @@ mod services;
 mod utils;
 mod websocket;
 
-use components::{Auth, Room as ShowRoom, RoomsList, UserAvatar};
+use components::{Auth, Room as ShowRoom, RoomsList, UpdateProfile, UserAvatar};
 
 use crate::utils::{asset_url, is_on_mobile};
 use crate::websocket::{Connection, InternalEventBus, Request, Response};
@@ -27,8 +27,9 @@ use yew_functional::{
 };
 use yew_material::menu::Corner;
 use yew_material::{
-    GraphicType, ListIndex, MatDrawer, MatDrawerAppContent, MatIcon, MatListItem, MatMenu,
-    WeakComponentLink,
+    drawer::MatDrawerAppContent,
+    list::{GraphicType, ListIndex},
+    MatDrawer, MatIcon, MatListItem, MatMenu, WeakComponentLink,
 };
 use yew_router::agent::RouteRequest;
 use yew_router::prelude::*;
@@ -81,8 +82,10 @@ impl Default for AppState {
     }
 }
 
-#[derive(Switch, Clone)]
+#[derive(Switch, Clone, Debug, Copy)]
 pub enum AppRoute {
+    #[to = "/profile/update"]
+    UpdateProfile,
     #[to = "/login"]
     Auth,
     #[to = "/room/{id}"]
@@ -158,14 +161,20 @@ fn home(props: &HomeProps) -> Html {
             Callback::from(move |list_index| {
                 if let ListIndex::Single(Some(index)) = list_index {
                     console_log!("index", format!("{}", index));
-                    if index == 0 {
-                        console_log!("sign out");
-                        let window = yew::utils::window();
-                        window.local_storage().unwrap().unwrap().clear().unwrap();
+                    match index {
+                        0 => {
+                            let route = Route::from(AppRoute::UpdateProfile);
+                            router.borrow_mut().send(RouteRequest::ChangeRoute(route));
+                        }
+                        1 => {
+                            console_log!("sign out");
+                            let window = yew::utils::window();
+                            window.local_storage().unwrap().unwrap().clear().unwrap();
 
-                        reset_callback.emit(());
-                        window.location().reload().unwrap();
-                    };
+                            reset_callback.emit(());
+                        }
+                        _ => unreachable!(),
+                    }
                 } else {
                     unreachable!("menu isn't multi so index should be single")
                 }
@@ -180,6 +189,13 @@ fn home(props: &HomeProps) -> Html {
                     <img slot="graphic" src=asset_url(user.avatar.as_ref()) />
                 </MatListItem>
                 <li divider=true role="separator" />
+
+                <MatListItem graphic=GraphicType::Icon>
+                    <span>{ "Update" }</span>
+                    <span slot="graphic">
+                        <MatIcon>{ "edit" }</MatIcon>
+                    </span>
+                </MatListItem>
 
                 <MatListItem graphic=GraphicType::Icon>
                     <span>{ "Sign out" }</span>
@@ -295,9 +311,25 @@ fn main_application(handle: &SharedHandle<AppState>) -> Html {
                                     .replace("/room/", "");
                                 let uuid = Uuid::from_str(&uuid);
 
-                                let route = match uuid {
-                                    Ok(uuid) => AppRoute::Rooms(uuid),
-                                    Err(_) => AppRoute::Home,
+                                let current_route = route_service.borrow().get_route().route;
+                                // todo remove this when using query params -- see next todo
+                                #[allow(clippy::if_same_then_else)]
+                                let route = if current_route.starts_with("/room") {
+                                    match uuid {
+                                        Ok(uuid) => AppRoute::Rooms(uuid),
+                                        Err(_) => AppRoute::Home,
+                                    }
+                                } else if current_route.starts_with("/profile/update") {
+                                    AppRoute::UpdateProfile
+                                } else if current_route.starts_with("/login") {
+                                    AppRoute::Home // todo check for redirect query
+                                } else if current_route == "/" {
+                                    AppRoute::Home
+                                } else {
+                                    panic!(
+                                        "already handled route ({}) - should never panic",
+                                        current_route
+                                    )
                                 };
                                 let route = Route::from(route);
                                 router.borrow_mut().send(RouteRequest::ChangeRoute(route));
@@ -314,6 +346,14 @@ fn main_application(handle: &SharedHandle<AppState>) -> Html {
                                 events_dispatcher
                                     .borrow_mut()
                                     .send(websocket::internal_events::Request::NewMessage(data))
+                            }
+                            OpCode::UserUpdate => {
+                                let data = serde_json::from_value::<User>(m.data.clone()).unwrap();
+                                if let Some(me) = &state.me {
+                                    if me.uuid == data.uuid {
+                                        state.me = Some(data);
+                                    }
+                                }
                             }
                             _ => panic!("fucked"),
                         }
@@ -377,7 +417,9 @@ fn main_application(handle: &SharedHandle<AppState>) -> Html {
 }
 
 fn switch(switch: AppRoute) -> Html {
+    console_log!("route", format!("{:?}", switch));
     match switch {
+        AppRoute::UpdateProfile => html! { <SharedStateComponent<UpdateProfile> /> },
         AppRoute::Auth => html! { <Auth /> },
         AppRoute::Rooms(room) => html! { <SharedStateComponent<Home> room=room /> },
         AppRoute::Home => html! { <SharedStateComponent<Home> /> },

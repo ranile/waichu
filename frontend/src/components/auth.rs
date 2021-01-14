@@ -8,8 +8,8 @@ use yew::services::storage::Area;
 use yew::services::StorageService;
 use yew_functional::{function_component, use_state};
 use yew_material::{
-    MatButton, MatCheckbox, MatFormfield, MatIcon, MatLinearProgress, MatTab, MatTabBar,
-    MatTextField, TextFieldType,
+    text_inputs::TextFieldType, MatButton, MatCheckbox, MatFormfield, MatIcon, MatLinearProgress,
+    MatTab, MatTabBar, MatTextField,
 };
 use yew_state::{SharedHandle, SharedStateComponent};
 

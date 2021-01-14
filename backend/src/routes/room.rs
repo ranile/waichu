@@ -1,6 +1,6 @@
 use crate::utils::{
-    ensure_authorized, error_reply, is_asset_image, json_body, json_with_status, with_db,
-    with_transaction, AssetExt,
+    ensure_authorized, error_reply, json_body, json_with_status, with_db, with_transaction,
+    AssetExt,
 };
 use crate::{bail_if_err, bail_if_err_or_404, update_fields, value_or_404};
 use crate::{services, utils};
@@ -111,13 +111,6 @@ pub async fn room_icon(
 ) -> Result<impl warp::Reply, warp::Rejection> {
     with_transaction(pool, move |conn| {
         Box::pin(async move {
-            if !is_asset_image(&asset) {
-                return Ok(error_reply(
-                    StatusCode::BAD_REQUEST,
-                    "asset must be a PNG, JPEG or BMP",
-                ));
-            }
-
             let mut room = value_or_404!(services::room::get(&mut *conn, room).await?);
             let is_in_room = services::room::user_in_room(&mut *conn, &room, &user).await?;
 

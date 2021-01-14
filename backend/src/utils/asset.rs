@@ -5,13 +5,12 @@ use futures::future::BoxFuture;
 use futures::TryStreamExt;
 use image::ImageFormat;
 use lazy_static::lazy_static;
-use mime::Mime;
-use mime_sniffer::MimeTypeSniffer;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
 use tokio::fs;
 use tokio::sync::Mutex;
+use tokio::task::spawn_blocking;
 use warp::http::StatusCode;
 use warp::multipart::{FormData, Part};
 use warp::{multipart, Filter, Rejection};
@@ -42,7 +41,7 @@ impl AssetExt for Asset {
             let bytes = self.bytes.clone();
 
             tokio::task::spawn_blocking(move || {
-                let img = image::load_from_memory(&bytes)?;
+                let img = image::load_from_memory(&bytes).unwrap();
 
                 img.save_with_format(path, ImageFormat::Jpeg)?;
                 Ok::<_, anyhow::Error>(())
@@ -63,6 +62,7 @@ impl AssetExt for Asset {
     }
 }
 
+// only works for images but that's only what i should need
 async fn upload(form: FormData) -> Result<Asset, Rejection> {
     let parts: Vec<Part> = form.try_collect().await.map_err(|e| {
         ApiError::new_with_message_and_status(&e.to_string(), StatusCode::BAD_REQUEST)
@@ -84,11 +84,6 @@ async fn upload(form: FormData) -> Result<Asset, Rejection> {
 
     let part = parts.into_iter().next().unwrap();
 
-    let content_type = match part.content_type() {
-        Some(content_type) => mime::Mime::from_str(content_type).ok(),
-        None => None,
-    };
-
     let bytes = part
         .stream()
         .try_fold(Vec::new(), |mut vec, data| {
@@ -101,30 +96,24 @@ async fn upload(form: FormData) -> Result<Asset, Rejection> {
                 .into_rejection()
         })?;
 
-    let content_type = match content_type {
-        Some(content_type) => content_type,
-        None => {
-            let mime = bytes.sniff_mime_type().map(|mime| Mime::from_str(mime));
-            match mime {
-                Some(Ok(mime)) => mime,
-                _ => {
-                    return Err(ApiError::new_with_message_and_status(
-                        "invalid mime type",
-                        StatusCode::BAD_REQUEST,
-                    )
-                    .into_rejection())
-                }
-            }
-        }
+    let bytes = Arc::new(bytes);
+    let img = {
+        let bytes = Arc::clone(&bytes);
+        spawn_blocking(move || image::load_from_memory(&*bytes))
+            .await
+            .unwrap()
     };
 
-    Ok(Asset::new(bytes, content_type))
+    if img.is_ok() {
+        Ok(Asset::new(bytes))
+    } else {
+        Err(
+            ApiError::new_with_message_and_status("invalid image type", StatusCode::BAD_REQUEST)
+                .into_rejection(),
+        )
+    }
 }
 
 pub fn multipart() -> impl Filter<Extract = (Asset,), Error = Rejection> + Clone {
     multipart::form().and_then(upload)
-}
-
-pub fn is_asset_image(asset: &Asset) -> bool {
-    matches!(asset.mime.subtype(), mime::BMP | mime::JPEG | mime::PNG)
 }

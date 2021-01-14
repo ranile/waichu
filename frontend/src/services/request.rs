@@ -7,7 +7,7 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::fmt;
 
-fn url(route: impl Into<String>) -> String {
+pub fn url(route: impl Into<String>) -> String {
     let base = yew::utils::window().location().origin().unwrap();
     format!("{}{}", base, route.into())
 }
@@ -41,11 +41,13 @@ pub async fn request<T: Serialize, R: DeserializeOwned>(
     body: Option<&T>,
     auth_token: Option<&str>,
 ) -> anyhow::Result<R> {
+    let url = url(request_url);
     let mut builder = match method {
         Method::POST => client
-            .post(&url(request_url))
+            .post(&url)
             .body(serde_json::to_string(body.as_ref().unwrap())?),
-        Method::GET => client.get(&url(request_url)),
+        Method::GET => client.get(&url),
+        Method::PUT => client.put(&url),
         _ => unreachable!(),
     };
 

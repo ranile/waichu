@@ -1,6 +1,7 @@
 use chrono::{DateTime, Datelike, Local, Utc};
 use common::Asset;
 use std::rc::Rc;
+use wasm_bindgen::JsValue;
 use yew_functional::use_context;
 
 pub const PROFILE_PICTURE_URL: &str = "https://i.redd.it/j04fpwy2ea261.png";
@@ -89,4 +90,8 @@ pub fn asset_url(asset: Option<&Asset>) -> String {
     asset
         .map(|asset| format!("http://localhost:9090/api/assets/{}", asset.uuid))
         .unwrap_or_else(|| PROFILE_PICTURE_URL.to_string())
+}
+
+pub fn js_to_anyhow(js_value: JsValue) -> anyhow::Error {
+    anyhow::anyhow!("{:?}", js_value)
 }

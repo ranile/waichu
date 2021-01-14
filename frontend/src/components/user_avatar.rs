@@ -4,7 +4,7 @@ use yew::prelude::*;
 use yew_functional::{function_component, use_effect, use_state};
 use yew_material::{
     dialog::{ActionType, MatDialogAction},
-    MatButton, MatDialog, MatIconButton, WeakComponentLink,
+    MatButton, MatDialog, MatIconButton,
 };
 
 #[derive(Clone, Properties, PartialEq)]
@@ -64,20 +64,16 @@ pub fn user_avatar(props: &UserAvatarProps) -> Html {
 pub struct UserProfileDialogProps {
     pub user: User,
     pub open: bool,
-    pub onclosed: Callback<()>,
+    pub onclosed: Callback<String>,
 }
 
 #[function_component(UserProfileDialog)]
 pub fn user_profile_dialog(props: &UserProfileDialogProps) -> Html {
-    let (dialog_link, _) = use_state(WeakComponentLink::<MatDialog>::default);
-
     html! {
         <span class="user-profile-dialog-container">
             <MatDialog
-                dialog_link=&*dialog_link
                 onclosed=&props.onclosed
                 open=props.open
-                // onclosed=on_dialog_closed TODO fix yew-material coz ya boi an idiot
             >
                 <section class="profile-dialog-container">
                     <img src=asset_url(props.user.avatar.as_ref()) />

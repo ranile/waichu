@@ -4,6 +4,7 @@ mod messages;
 mod room;
 mod rooms_list;
 mod single_message;
+mod update_profile;
 mod user_avatar;
 
 pub use auth::Auth;
@@ -12,4 +13,5 @@ pub use messages::RoomMessages;
 pub use room::Room;
 pub use rooms_list::RoomsList;
 pub use single_message::SingleMessage;
+pub use update_profile::UpdateProfile;
 pub use user_avatar::{UserAvatar, UserProfileDialog};

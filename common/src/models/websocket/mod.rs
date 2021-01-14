@@ -33,6 +33,7 @@ pub enum OpCode {
     RoomCreate,
     RoomUpdate,
     RoomJoin,
+    UserUpdate,
 }
 
 impl From<u32> for OpCode {
@@ -49,6 +50,7 @@ fn u32_to_opcode(value: u32) -> OpCode {
         2 => OpCode::RoomCreate,
         3 => OpCode::RoomUpdate,
         4 => OpCode::RoomJoin,
+        5 => OpCode::UserUpdate,
 
         // client side => send only for client
         100 => OpCode::Authenticate,

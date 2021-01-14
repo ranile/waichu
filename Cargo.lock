@@ -121,8 +121,6 @@ dependencies = [
  "jsonwebtoken",
  "lazy_static",
  "log",
- "mime",
- "mime-sniffer",
  "serde",
  "serde_json",
  "sqlx",
@@ -387,7 +385,6 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "http",
- "mime",
  "serde",
  "serde_json",
  "sqlx",
@@ -631,7 +628,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ece68d15c92e84fa4f19d3780f1294e5ca82a78a6d515f1efaabcc144688be00"
 dependencies = [
  "matches",
- "percent-encoding 2.1.0",
+ "percent-encoding",
 ]
 
 [[package]]
@@ -1067,17 +1064,6 @@ dependencies = [
 
 [[package]]
 name = "idna"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38f09e0f0b1fb55fdee1f17470ad800da77af5186a1a76c026b679358b7e844e"
-dependencies = [
- "matches",
- "unicode-bidi",
- "unicode-normalization",
-]
-
-[[package]]
-name = "idna"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "02e2673c30ee86b5b96a9cb52ad15718aa1f966f5ab9ad54a8b95d5ca33120a9"
@@ -1290,16 +1276,6 @@ name = "mime"
 version = "0.3.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2a60c7ce501c71e03a9c9c0d35b861413ae925bd979cc7a4e30d060069aaac8d"
-
-[[package]]
-name = "mime-sniffer"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e98f7cfbbaf64674624e2aa35327d75e3de8e4d1b2555ef70dcf0c107a95490"
-dependencies = [
- "mime",
- "url 1.7.2",
-]
 
 [[package]]
 name = "mime_guess"
@@ -1619,12 +1595,6 @@ dependencies = [
  "once_cell",
  "regex",
 ]
-
-[[package]]
-name = "percent-encoding"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31010dd2e1ac33d5b46a5b413495239882813e0369f8ed8a5e266f173602f831"
 
 [[package]]
 name = "percent-encoding"
@@ -2047,14 +2017,14 @@ dependencies = [
  "mime",
  "mime_guess",
  "native-tls",
- "percent-encoding 2.1.0",
+ "percent-encoding",
  "pin-project-lite 0.2.0",
  "serde",
  "serde_json",
  "serde_urlencoded 0.7.0",
  "tokio 0.2.23",
  "tokio-tls",
- "url 2.2.0",
+ "url",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
@@ -2224,7 +2194,7 @@ dependencies = [
  "dtoa",
  "itoa",
  "serde",
- "url 2.2.0",
+ "url",
 ]
 
 [[package]]
@@ -2381,7 +2351,7 @@ dependencies = [
  "memchr",
  "once_cell",
  "parking_lot",
- "percent-encoding 2.1.0",
+ "percent-encoding",
  "rand 0.7.3",
  "rustls",
  "serde",
@@ -2393,7 +2363,7 @@ dependencies = [
  "sqlx-rt",
  "stringprep",
  "thiserror",
- "url 2.2.0",
+ "url",
  "uuid",
  "webpki",
  "webpki-roots",
@@ -2421,7 +2391,7 @@ dependencies = [
  "sqlx-core",
  "sqlx-rt",
  "syn",
- "url 2.2.0",
+ "url",
 ]
 
 [[package]]
@@ -2719,7 +2689,7 @@ dependencies = [
  "log",
  "rand 0.7.3",
  "sha-1 0.9.2",
- "url 2.2.0",
+ "url",
  "utf-8",
 ]
 
@@ -2803,25 +2773,14 @@ checksum = "a156c684c91ea7d62626509bce3cb4e1d9ed5c4d978f7b4352658f96a4c26b4a"
 
 [[package]]
 name = "url"
-version = "1.7.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd4e7c0d531266369519a4aa4f399d748bd37043b00bde1e4ff1f60a120b355a"
-dependencies = [
- "idna 0.1.5",
- "matches",
- "percent-encoding 1.0.1",
-]
-
-[[package]]
-name = "url"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5909f2b0817350449ed73e8bcd81c8c3c8d9a7a5d8acba4b27db277f1868976e"
 dependencies = [
  "form_urlencoded",
- "idna 0.2.0",
+ "idna",
  "matches",
- "percent-encoding 2.1.0",
+ "percent-encoding",
 ]
 
 [[package]]
@@ -3164,7 +3123,7 @@ checksum = "85e60b0d1b5f99db2556934e21937020776a5d31520bf169e851ac44e6420214"
 [[package]]
 name = "yew"
 version = "0.17.4"
-source = "git+https://github.com/yewstack/yew/?branch=master#2c60d596e74b7b22e5d19fff014d03059278f84c"
+source = "git+https://github.com/yewstack/yew/?branch=master#3d8ea6b716d95ae10449eb01ea47ce957d23dc71"
 dependencies = [
  "anyhow",
  "anymap",
@@ -3211,7 +3170,7 @@ dependencies = [
 [[package]]
 name = "yew-macro"
 version = "0.17.0"
-source = "git+https://github.com/yewstack/yew/?branch=master#2c60d596e74b7b22e5d19fff014d03059278f84c"
+source = "git+https://github.com/yewstack/yew/?branch=master#3d8ea6b716d95ae10449eb01ea47ce957d23dc71"
 dependencies = [
  "boolinator",
  "lazy_static",
@@ -3223,8 +3182,9 @@ dependencies = [
 [[package]]
 name = "yew-material"
 version = "0.1.0"
-source = "git+https://github.com/hamza1311/yew-material/#c8e3ec7a05b3a829a30055dc4f432683f2ea9b6d"
+source = "git+https://github.com/hamza1311/yew-material/#96d9cd09dc86da2eb2cb2c9e79f63510bc705038"
 dependencies = [
+ "gloo",
  "js-sys",
  "paste",
  "wasm-bindgen",

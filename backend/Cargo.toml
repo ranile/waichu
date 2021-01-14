@@ -24,8 +24,6 @@ chrono = "0.4"
 
 lazy_static = "1.4"
 
-mime-sniffer = "0.1"
-mime = "0.3"
 bytes = "0.5"
 image = "0.23"
 

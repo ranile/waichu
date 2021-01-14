@@ -2,7 +2,6 @@ use crate::websocket;
 use common::websocket::{MessagePayload, OpCode};
 use common::{Asset, Message, MessageType, Room, User};
 use sqlx::PgConnection;
-use std::str::FromStr;
 use std::sync::Arc;
 
 pub async fn create(db: &mut PgConnection, message: Message) -> anyhow::Result<Message> {
@@ -88,7 +87,6 @@ order by messages.created_at desc ;
                 created_at: value.author_created_at,
                 avatar: match value.asset_uuid {
                     Some(_) => Some(Asset {
-                        mime: mime::Mime::from_str("image/jpeg").unwrap(),
                         uuid: value.asset_uuid.unwrap(),
                         bytes: Arc::new(vec![]),
                         created_at: value.asset_created_at.unwrap(),

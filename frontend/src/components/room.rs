@@ -11,10 +11,11 @@ use yew::services::StorageService;
 use yew_functional::{function_component, use_effect, use_effect_with_deps, use_ref, use_state};
 use yew_material::{
     dialog::{ActionType, MatDialogAction},
+    text_inputs::TextFieldType,
     top_app_bar::{
         MatTopAppBar, MatTopAppBarActionItems, MatTopAppBarNavigationIcon, MatTopAppBarTitle,
     },
-    MatButton, MatDialog, MatIcon, MatIconButton, MatIconButtonToggle, MatTextField, TextFieldType,
+    MatButton, MatDialog, MatIcon, MatIconButton, MatIconButtonToggle, MatTextField,
     WeakComponentLink,
 };
 
@@ -253,7 +254,6 @@ pub fn show_room(props: &ShowRoomProps) -> Html {
         <MatDialog
             // heading=&room.name
             dialog_link=&*dialog_link
-            // onclosed=on_dialog_closed TODO fix yew-material coz ya boi an idiot
         >
             <h2>
                 <img src=asset_url(room.icon.as_ref()) />
@@ -288,6 +288,7 @@ pub fn show_room(props: &ShowRoomProps) -> Html {
         <MatDialog
             heading=format!("Add member in {}", room.name)
             dialog_link=&*invite_dialog_link
+            // onclosed=on_dialog_closed TODO use action (see add action)
         >
             <MatTextField
                 outlined=true

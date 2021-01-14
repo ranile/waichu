@@ -1,11 +1,12 @@
-use crate::services;
+use crate::{services, websocket};
+use common::websocket::{MessagePayload, OpCode};
 use common::{Asset, User};
 use serde::export::Formatter;
 use sqlx::postgres::PgDatabaseError;
 use sqlx::types::Uuid;
 use sqlx::PgConnection;
 use std::fmt;
-use std::str::FromStr;
+use std::sync::Arc;
 
 macro_rules! get {
     ($db:ident, $sel_col:expr, $value:expr) => {{
@@ -35,7 +36,6 @@ where "# + $sel_col
                 created_at: res.user_created_at,
                 avatar: match res.user_avatar {
                     Some(_) => Some(Asset {
-                        mime: mime::Mime::from_str("image/jpeg").unwrap(),
                         uuid: res.asset_uuid.unwrap(),
                         bytes: Default::default(),
                         created_at: res.asset_created_at.unwrap(),
@@ -140,5 +140,16 @@ where uuid = $3;
     .execute(&mut *db)
     .await?;
 
-    get(db, uuid).await.map(|it| it.unwrap())
+    let new_user = get(db, uuid).await.map(|it| it.unwrap())?;
+
+    websocket::send_message(
+        Arc::new(MessagePayload {
+            op: OpCode::UserUpdate,
+            data: new_user.clone(),
+        }),
+        |uuid| uuid == new_user.uuid,
+    )
+    .await;
+
+    Ok(new_user)
 }
