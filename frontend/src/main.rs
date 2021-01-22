@@ -9,8 +9,6 @@ use crate::utils::{asset_url, is_on_mobile};
 use crate::websocket::{Connection, InternalEventBus, Request, Response};
 use common::websocket::{AuthenticatedPayload, OpCode};
 use common::{Message, Room, User};
-use lazy_static::lazy_static;
-use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -37,10 +35,6 @@ use yew_state::{SharedHandle, SharedState, SharedStateComponent};
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
-
-lazy_static! {
-    pub static ref CLIENT: Client = Client::new();
-}
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct AppState {

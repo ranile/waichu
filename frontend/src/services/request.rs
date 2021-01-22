@@ -1,16 +1,13 @@
-use crate::CLIENT as client;
 use anyhow::Context;
 use common::errors::ApiError;
-use reqwest::header::AUTHORIZATION;
-use reqwest::{Method, StatusCode};
+use reqwasm::{Request, Method};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::fmt;
+use web_sys::FormData;
 
-pub fn url(route: impl Into<String>) -> String {
-    let base = yew::utils::window().location().origin().unwrap();
-    format!("{}{}", base, route.into())
-}
+const AUTHORIZATION: &str = "Authorization";
+
 fn to_sentence_case(input: &str) -> String {
     input
         .split('.')
@@ -36,20 +33,25 @@ impl fmt::Display for NoContent {
 }
 
 pub async fn request<T: Serialize, R: DeserializeOwned>(
-    request_url: impl Into<String>,
+    url: impl Into<String>,
     method: Method,
     body: Option<&T>,
+    form_data: Option<FormData>,
     auth_token: Option<&str>,
 ) -> anyhow::Result<R> {
-    let url = url(request_url);
+    let url = &url.into();
     let mut builder = match method {
-        Method::POST => client
-            .post(&url)
-            .body(serde_json::to_string(body.as_ref().unwrap())?),
-        Method::GET => client.get(&url),
-        Method::PUT => client.put(&url),
+        Method::POST => Request::post(url)
+            .body(serde_json::to_string(body.as_ref().unwrap())?)
+            .header("Content-Type", "application/json"),
+        Method::GET => Request::get(url),
+        Method::PUT => Request::put(url),
         _ => unreachable!(),
     };
+
+    if let Some(form_data) = form_data {
+        builder = builder.body(form_data);
+    }
 
     if let Some(token) = auth_token {
         if !token.is_empty() {
@@ -59,9 +61,9 @@ pub async fn request<T: Serialize, R: DeserializeOwned>(
 
     let resp = builder.send().await?;
     let status = resp.status();
-    if status.is_success() {
+    if 300 > status && status >= 200 {
         let res = resp.json::<R>().await;
-        if status == StatusCode::NO_CONTENT {
+        if status == 204 {
             res.context(NoContent)
         } else {
             Ok(res?)
@@ -77,34 +79,47 @@ macro_rules! request {
     (method = $method:ident, url = $url:expr) => {
         crate::services::request::request(
             $url,
-            ::reqwest::Method::$method,
-            Option::None,
-            Option::None,
+            ::reqwasm::Method::$method,
+            ::std::option::Option::None,
+            ::std::option::Option::None,
+            ::std::option::Option::None,
         )
     };
     (method = $method:ident, url = $url:expr, body = $body:expr) => {
         crate::services::request::request(
             $url,
-            ::reqwest::Method::$method,
-            Option::Some($body),
-            Option::None,
+            ::reqwasm::Method::$method,
+            ::std::option::Option::Some($body),
+            ::std::option::Option::None,
+            ::std::option::Option::None,
         )
     };
 
     (method = $method:ident, url = $url:expr, token = $token:expr) => {
         crate::services::request::request(
             $url,
-            ::reqwest::Method::$method,
-            Option::Some(&"".to_string()),
-            Option::Some($token),
+            ::reqwasm::Method::$method,
+            ::std::option::Option::Some(&"".to_string()),
+            ::std::option::Option::None,
+            ::std::option::Option::Some($token),
         )
     };
     (method = $method:ident, url = $url:expr, body = $body:expr, token = $token:expr) => {
         crate::services::request::request(
             $url,
-            ::reqwest::Method::$method,
-            Option::Some($body),
-            Option::Some($token),
+            ::reqwasm::Method::$method,
+            ::std::option::Option::Some($body),
+            ::std::option::Option::None,
+            ::std::option::Option::Some($token),
+        )
+    };
+    (method = $method:ident, url = $url:expr, form_data = $form_data:expr, token = $token:expr) => {
+        crate::services::request::request(
+            $url,
+            ::reqwasm::Method::$method,
+            ::std::option::Option::Some(&"".to_string()),
+            ::std::option::Option::Some($form_data),
+            ::std::option::Option::Some($token),
         )
     };
 }

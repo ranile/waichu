@@ -9,7 +9,6 @@ yew = { git = "https://github.com/yewstack/yew/", branch = "master" }
 yew-functional = { git = "https://github.com/yewstack/yew/" }
 yew-router = { git = "https://github.com/yewstack/yew/" }
 wasm-bindgen = "0.2"
-reqwest = { version = "0.10", features = ["json"] }
 anyhow = "1.0"
 wasm-bindgen-futures = "0.4"
 weblog = "0.4.0-beta.1"
@@ -18,13 +17,14 @@ serde_json = "1.0"
 uuid = { version = "0.8", features = ["serde", "v4", "wasm-bindgen"] }
 js-sys = "0.3"
 yew-state = { git = "https://github.com/hamza1311/yew-state/", branch = "master-yew" }
-lazy_static = "1.4"
 wee_alloc = "0.4"
 chrono = { version = "0.4", features = ["serde", "wasmbind"] }
 
 yew-material = { git = "https://github.com/hamza1311/yew-material/", features = ["full"] }
 #yew-material = { path = "../../yew-material/yew-material", features = ["full"] }
 yew-md = { git = "https://github.com/hamza1311/yew-md", branch = "master-yew" }
+#reqwasm = { path = "../../reqwasm" }
+reqwasm = { git = "https://github.com/hamza1311/reqwasm" }
 common = { path = "../common" }
 
 [dependencies.web-sys]
