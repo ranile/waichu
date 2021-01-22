@@ -13,6 +13,7 @@ use tokio::sync::mpsc;
 use tokio::time::{Duration, Instant};
 use warp::filters::ws::WebSocket;
 use warp::ws::Message;
+use tokio_stream::wrappers::UnboundedReceiverStream;
 
 /// How often heartbeat pings are sent
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
@@ -47,7 +48,7 @@ async fn heartbeat(session_id: Uuid, tx: Arc<mpsc::UnboundedSender<Result<Messag
                 user_disconnected(session_id).await;
             };
 
-            tokio::time::delay_for(HEARTBEAT_INTERVAL).await;
+            tokio::time::sleep(HEARTBEAT_INTERVAL).await;
         }
     }
 }
@@ -59,6 +60,7 @@ pub async fn user_connected(pool: PgPool, ws: WebSocket) -> anyhow::Result<()> {
     // Use an unbounded channel to handle buffering and flushing of messages
     // to the websocket...
     let (tx, rx) = mpsc::unbounded_channel();
+    let rx = UnboundedReceiverStream::new(rx);
     tokio::task::spawn(rx.forward(user_ws_tx).map(|result| {
         if let Err(e) = result {
             eprintln!("websocket send error: {}", e);
