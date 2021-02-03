@@ -1,4 +1,4 @@
-use crate::{services, websocket};
+use crate::websocket;
 use common::websocket::{MessagePayload, OpCode};
 use common::{Asset, User};
 use serde::export::Formatter;
@@ -7,9 +7,12 @@ use sqlx::types::Uuid;
 use sqlx::PgConnection;
 use std::fmt;
 use std::sync::Arc;
+use tracing::instrument;
+use tracing::{debug, error};
 
 macro_rules! get {
     ($db:ident, $sel_col:expr, $value:expr) => {{
+        debug!("fetching user");
         let res = sqlx::query!(
             r#"
 select users.username as user_username,
@@ -25,11 +28,11 @@ where "# + $sel_col
                 + " = $1;",
             $value
         )
-        .fetch_one($db)
+        .fetch_optional($db)
         .await;
 
         let user = match res {
-            Ok(res) => Ok(User {
+            Ok(Some(res)) => Ok(Some(User {
                 uuid: res.user_uuid,
                 username: res.user_username,
                 password: res.user_password,
@@ -42,11 +45,15 @@ where "# + $sel_col
                     }),
                     None => None,
                 },
-            }),
-            Err(e) => Err(e),
+            })),
+            Ok(None) => Ok(None),
+            Err(e) => {
+                error!("error while fetching user: {}", e);
+                Err(anyhow::anyhow!(e))
+            }
         };
 
-        services::optional_value_or_err(user)
+        user
     }};
 }
 
@@ -59,6 +66,7 @@ impl fmt::Display for UserAlreadyExists {
     }
 }
 
+#[instrument]
 pub async fn create(db: &mut PgConnection, user: User) -> anyhow::Result<User> {
     let User {
         username,
@@ -66,6 +74,8 @@ pub async fn create(db: &mut PgConnection, user: User) -> anyhow::Result<User> {
         password,
         ..
     } = user;
+
+    debug!("creating user");
 
     let result = sqlx::query!(
         "
@@ -81,21 +91,27 @@ pub async fn create(db: &mut PgConnection, user: User) -> anyhow::Result<User> {
     .await;
 
     match result {
-        Ok(res) => Ok(User {
-            uuid: res.uuid,
-            username: res.username,
-            password: res.password,
-            created_at: res.created_at,
-            avatar: None,
-        }),
+        Ok(res) => {
+            let user = User {
+                uuid: res.uuid,
+                username: res.username,
+                password: res.password,
+                created_at: res.created_at,
+                avatar: None,
+            };
+            debug!("created user: uuid: {}", user.uuid);
+            Ok(user)
+        }
         Err(sqlx::Error::Database(db_error)) => {
             let db_error = db_error.downcast::<PgDatabaseError>();
 
             Err(
                 // duplicate key value violates unique constraint "users_username_key"
                 if db_error.code() == "23505" && db_error.message().contains("users_username_key") {
+                    debug!("error creating user: user already exists");
                     anyhow::Error::from(db_error).context(UserAlreadyExists(username))
                 } else {
+                    error!("error creating user: {}", db_error);
                     anyhow::Error::from(db_error)
                 },
             )
@@ -104,10 +120,12 @@ pub async fn create(db: &mut PgConnection, user: User) -> anyhow::Result<User> {
     }
 }
 
+#[instrument]
 pub async fn get(db: &mut PgConnection, uuid: Uuid) -> anyhow::Result<Option<User>> {
     get!(db, "users.uuid", uuid)
 }
 
+#[instrument]
 pub async fn get_by_username(
     db: &mut PgConnection,
     username: &str,

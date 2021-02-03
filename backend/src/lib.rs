@@ -9,57 +9,75 @@ pub mod websocket;
 pub use macros::*;
 
 use crate::utils::{error_reply, ASSETS_PATH};
+use anyhow::Context;
 use common::errors::ApiError;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
-use std::fs::OpenOptions;
+use std::io::ErrorKind;
+use std::path::Path;
+use std::str::FromStr;
 use std::{env, io};
 use tokio::fs;
+use tracing_appender::non_blocking::NonBlocking;
+use tracing_subscriber::fmt;
+use tracing_subscriber::prelude::*;
+use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::EnvFilter;
 use warp::http::StatusCode;
 use warp::{Filter, Rejection, Reply};
 
-pub fn setup_logger() -> anyhow::Result<()> {
-    fern::Dispatch::new()
-        .format(|out, message, record| {
-            out.finish(format_args!(
-                "[{}][{}][{}] {}",
-                chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
-                record.target(),
-                record.level(),
-                message
-            ))
-        })
-        .level(log::LevelFilter::Info)
-        .chain(std::io::stdout())
-        .chain(
-            OpenOptions::new()
-                .write(true)
-                .create(true)
-                .append(false)
-                .open("backend.log")?,
+pub fn setup_logger(file_writer: NonBlocking) -> anyhow::Result<()> {
+    let filter = std::env::var("RUST_LOG")
+        .unwrap_or_else(|_| "debug,hyper=info,sqlx::query=warn".to_owned());
+    let filter = EnvFilter::from_str(&filter)?;
+    //
+    tracing_subscriber::registry()
+        .with(filter)
+        .with(
+            fmt::Subscriber::new()
+                .with_target(true)
+                .with_level(true)
+                .with_ansi(true)
+                .with_timer(fmt::time::ChronoLocal::with_format(
+                    "%I:%M:%S %p".to_string(),
+                ))
+                .with_writer(io::stdout),
         )
-        .apply()?;
+        .with(
+            fmt::Subscriber::new()
+                .with_target(true)
+                .with_level(true)
+                .with_ansi(false)
+                .with_writer(file_writer),
+        )
+        .init();
     Ok(())
 }
 
 pub async fn setup_database() -> anyhow::Result<PgPool> {
     let pool = PgPoolOptions::new()
-        .connect(&env::var("DATABASE_URL")?)
-        .await?;
+        .connect(
+            &env::var("DATABASE_URL").context("environment variable `DATABASE_URL` not defined")?,
+        )
+        .await
+        .context("failed to connect to database")?;
 
-    sqlx::migrate!().run(&pool).await?;
+    sqlx::migrate!()
+        .run(&pool)
+        .await
+        .context("failed to run database migrations")?;
 
     Ok(pool)
 }
 
 pub async fn setup_assets_directory() -> anyhow::Result<String> {
-    let assets_path = env::var("ASSETS_PATH")?;
-    println!("{}", assets_path);
-    if let Err(err) = fs::read_dir(&assets_path).await {
-        if let io::ErrorKind::NotFound = err.kind() {
-            anyhow::bail!("assets directory doesn't exists");
-        }
-    };
+    let assets_path =
+        env::var("ASSETS_PATH").context("environment variable `ASSETS_PATH` not defined")?;
+    anyhow::ensure!(
+        exists(&assets_path).await?,
+        "assets directory doesn't exists"
+    );
+
     ASSETS_PATH.lock().await.replace(assets_path.clone());
 
     Ok(assets_path)
@@ -108,4 +126,17 @@ async fn handler(err: Rejection) -> Result<impl warp::Reply, Rejection> {
     );
 
     Ok(error_reply(code, &message))
+}
+
+pub async fn exists(path: impl AsRef<Path>) -> anyhow::Result<bool> {
+    Ok(fs::metadata(path.as_ref())
+        .await
+        .map(|_| true)
+        .or_else(|error| {
+            if error.kind() == ErrorKind::NotFound {
+                Ok(false)
+            } else {
+                Err(error)
+            }
+        })?)
 }

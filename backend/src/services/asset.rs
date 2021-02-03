@@ -1,49 +1,54 @@
-use crate::services::optional_value_or_err;
 use common::Asset;
 use sqlx::types::Uuid;
 use sqlx::PgConnection;
 use std::sync::Arc;
+use tracing::instrument;
+use tracing::debug;
 
-macro_rules! construct_asset {
-    ($asset:ident) => {{
-        match $asset {
-            Ok(asset) => Ok(Asset {
-                uuid: asset.uuid,
-                bytes: Arc::new(vec![]),
-                created_at: asset.created_at,
-            }),
-            Err(e) => Err(e),
-        }
-    }};
-}
-
+#[instrument]
 pub async fn create(db: &mut PgConnection, asset: Asset) -> anyhow::Result<Asset> {
     let Asset { uuid, bytes, .. } = asset;
 
-    let inserted = sqlx::query!("insert into assets (uuid) values ($1) returning *;", uuid)
+    debug!("creating asset");
+
+    let asset = sqlx::query!("insert into assets (uuid) values ($1) returning *;", uuid)
         .fetch_one(&mut *db)
-        .await;
+        .await?;
 
-    let mut new_asset = construct_asset!(inserted)?;
-    new_asset.bytes = bytes;
-
-    println!("new asset bytes {}", new_asset.bytes.len());
+    let new_asset = Asset {
+        uuid: asset.uuid,
+        bytes,
+        created_at: asset.created_at,
+    };
 
     Ok(new_asset)
 }
 
+#[instrument]
 pub async fn get(conn: &mut PgConnection, asset_id: Uuid) -> anyhow::Result<Option<Asset>> {
-    let asset = sqlx::query!("select * from assets where uuid = $1;", asset_id)
-        .fetch_one(conn)
-        .await;
+    debug!("fetching asset");
 
-    optional_value_or_err(construct_asset!(asset))
+    let asset = sqlx::query!("select * from assets where uuid = $1;", asset_id)
+        .fetch_optional(conn)
+        .await?;
+
+    if asset.is_none() {
+        debug!("asset {} not found", asset_id);
+    }
+
+    Ok(asset.map(|asset| Asset {
+        uuid: asset.uuid,
+        bytes: Arc::new(vec![]),
+        created_at: asset.created_at,
+    }))
 }
 
+#[instrument]
 pub async fn delete(db: &mut PgConnection, asset: &Asset) -> anyhow::Result<()> {
     sqlx::query!("delete from assets where uuid = $1;", asset.uuid)
         .execute(db)
         .await?;
+    debug!("deleted asset");
     Ok(())
 }
 

@@ -4,10 +4,12 @@ use common::{Message, MessageType, Room, RoomMember, User};
 use sqlx::types::Uuid;
 use sqlx::PgConnection;
 use std::sync::Arc;
+use tracing::{instrument, debug, error};
 
+#[instrument]
 pub async fn create(db: &mut PgConnection, room: Room) -> anyhow::Result<Room> {
     let Room { name, uuid, .. } = room;
-
+    debug!("creating room");
     let room = sqlx::query!(
         "
             insert into rooms(name, uuid)
@@ -27,7 +29,9 @@ pub async fn create(db: &mut PgConnection, room: Room) -> anyhow::Result<Room> {
     })
 }
 
+#[instrument]
 pub async fn get(db: &mut PgConnection, uuid: Uuid) -> anyhow::Result<Option<Room>> {
+    debug!("fetching room");
     let result = sqlx::query!(
         "
             select *
@@ -36,28 +40,35 @@ pub async fn get(db: &mut PgConnection, uuid: Uuid) -> anyhow::Result<Option<Roo
         ",
         uuid
     )
-    .fetch_one(&mut *db)
+    .fetch_optional(&mut *db)
     .await;
 
-    let result = match result {
-        Ok(room) => Ok(Room {
+    match result {
+        Ok(Some(room)) => Ok(Some(Room {
             uuid: room.uuid,
             name: room.name,
             created_at: room.created_at,
             icon: services::asset::get_from_option(db, room.icon).await?,
-        }),
-        Err(e) => Err(e),
-    };
-
-    services::optional_value_or_err(result)
+        })),
+        Ok(None) => {
+            debug!("room not found");
+            Ok(None)
+        },
+        Err(e) => {
+            error!("error during fetching room: {}", e);
+            Err(anyhow::anyhow!(e))
+        },
+    }
 }
 
+#[instrument]
 pub async fn join(
     db: &mut PgConnection,
     room: &Room,
     user: &User,
     has_elevated_perms: bool,
 ) -> anyhow::Result<RoomMember> {
+    debug!("joining room");
     let ret = sqlx::query!(
         "
             insert into room_members(room_id, user_id, has_elevated_permissions)
@@ -77,6 +88,7 @@ pub async fn join(
         joined_at: ret.joined_at,
     };
 
+    debug!("sending room join websocket notification");
     // notify user
     websocket::send_message(
         Arc::new(MessagePayload {
@@ -87,6 +99,7 @@ pub async fn join(
     )
     .await;
 
+    debug!("sending room join message for creator");
     // send the message that user joined
     services::message::create(
         db,
@@ -118,7 +131,9 @@ pub async fn user_in_room(db: &mut PgConnection, room: &Room, user: &User) -> an
     .unwrap_or(false))
 }
 
+#[instrument]
 pub async fn get_with_user(db: &mut PgConnection, user: &User) -> anyhow::Result<Vec<Room>> {
+    debug!("getting room with user");
     let res = sqlx::query!(
         "
             select r.*
@@ -144,10 +159,12 @@ pub async fn get_with_user(db: &mut PgConnection, user: &User) -> anyhow::Result
     Ok(rooms)
 }
 
+#[instrument]
 pub async fn get_room_members(
     db: &mut PgConnection,
     room: Room,
 ) -> anyhow::Result<Vec<RoomMember>> {
+    debug!("fetching room members");
     let returned = sqlx::query!(
         "
             select u.username   as user_username,
@@ -184,10 +201,14 @@ pub async fn get_room_members(
         })
     }
 
+    debug!("fetched rooms: {:?}", mapped);
+
     Ok(mapped)
 }
 
+#[instrument]
 pub async fn update(db: &mut PgConnection, room: Room) -> anyhow::Result<Room> {
+    debug!("updating room");
     let Room {
         uuid, name, icon, ..
     } = room;
@@ -208,6 +229,7 @@ where uuid = $3;
     )
     .execute(&mut *db)
     .await?;
+    debug!("room updated");
 
     get(db, uuid).await.map(|it| it.unwrap())
 }
