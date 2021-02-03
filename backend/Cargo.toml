@@ -10,6 +10,9 @@ futures = "0.3"
 warp = { version = "0.3", features = ["websocket", "compression"] }
 tokio-stream = "0.1"
 
+tower = "0.4"
+tower-http = { git = "https://github.com/tower-rs/tower-http", features = ["compression-full"] }
+
 anyhow = "1.0"
 
 tracing = { git = "https://github.com/tokio-rs/tracing/", rev = "07b81bb5c125de125f01cc9b91a0bfe2273a643a" }

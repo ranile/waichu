@@ -155,6 +155,8 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "tokio-test",
+ "tower",
+ "tower-http",
  "tracing 0.2.0",
  "tracing-appender",
  "tracing-futures 0.3.0",
@@ -2362,6 +2364,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "tower"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5fd7b451959622e21de79261673d658a0944b835012c58c51878ea55957fb51a"
+dependencies = [
+ "futures-core",
+ "pin-project 1.0.2",
+ "tower-layer",
+ "tower-service",
+ "tracing 0.1.22",
+]
+
+[[package]]
+name = "tower-http"
+version = "0.1.0"
+source = "git+https://github.com/tower-rs/tower-http#5fa22a4832978af24e607ae4b95f630b2e70f1dd"
+dependencies = [
+ "async-compression",
+ "bytes 1.0.1",
+ "futures-core",
+ "futures-util",
+ "http",
+ "http-body",
+ "pin-project 1.0.2",
+ "tokio-util",
+ "tower-layer",
+ "tower-service",
+]
+
+[[package]]
+name = "tower-layer"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "343bc9466d3fe6b0f960ef45960509f84480bf4fd96f92901afe7ff3df9d3a62"
+
+[[package]]
 name = "tower-service"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2376,6 +2414,7 @@ dependencies = [
  "cfg-if 1.0.0",
  "log",
  "pin-project-lite",
+ "tracing-attributes 0.1.11",
  "tracing-core 0.1.17",
 ]
 
@@ -2386,7 +2425,7 @@ source = "git+https://github.com/tokio-rs/tracing/?rev=07b81bb5c125de125f01cc9b9
 dependencies = [
  "cfg-if 1.0.0",
  "pin-project-lite",
- "tracing-attributes",
+ "tracing-attributes 0.2.0",
  "tracing-core 0.2.0",
 ]
 
@@ -2398,6 +2437,17 @@ dependencies = [
  "chrono",
  "crossbeam-channel",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "tracing-attributes"
+version = "0.1.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80e0ccfc3378da0cce270c946b676a376943f5cd16aeba64568e7939806f4ada"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

@@ -6,6 +6,11 @@ use backend::{
 use std::env;
 use tokio::fs;
 use warp::Filter;
+use warp::hyper;
+use hyper::Server;
+use std::convert::Infallible;
+use tower::ServiceBuilder;
+use tower_http::compression::CompressionLayer;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -55,18 +60,39 @@ async fn main() -> anyhow::Result<()> {
 
     let routes = routes.with(warp::trace::request());
 
+    let svc = warp::service(routes);
+
     let port = env::var("PORT")
         .map(|it| it.parse().expect("invalid port"))
         .unwrap_or(9090);
 
-    let (addr, server) =
-        warp::serve(routes).bind_with_graceful_shutdown(([0, 0, 0, 0], port), async {
-            tokio::signal::ctrl_c()
-                .await
-                .expect("failed to install CTRL+C signal handler");
-        });
+    let make_svc = hyper::service::make_service_fn(|_conn| {
+        let svc = svc.clone();
+        let svc = ServiceBuilder::new()
+            .layer(CompressionLayer::new())
+            .service(svc);
+
+        async move {
+            Ok::<_, Infallible>(svc)
+        }
+    });
+
+    let addr = ([0, 0, 0, 0], port).into();
+    let server = Server::bind(&addr).serve(make_svc);
+
+    // And now add a graceful shutdown signal...
+    let graceful = server.with_graceful_shutdown(async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to install CTRL+C signal handler");
+    });
 
     tracing::info!("running server at http://{}/", addr);
-    server.await;
+
+    // Run this server for... forever!
+    if let Err(e) = graceful.await {
+        eprintln!("server error: {}", e);
+    }
+
     Ok(())
 }
