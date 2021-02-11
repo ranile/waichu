@@ -2,10 +2,7 @@ use crate::services::request::request;
 use crate::utils::js_to_anyhow;
 use common::Asset;
 use reqwasm::Method;
-use wasm_bindgen::JsCast;
-use wasm_bindgen_futures::JsFuture;
-use web_sys::{File, FormData, Headers, Request, RequestInit, Response};
-use yew::utils::window;
+use web_sys::{File, FormData};
 
 pub async fn update_avatar(token: &str, file: File) -> anyhow::Result<Asset> {
     let url = "/api/users/me/avatar";
@@ -16,5 +13,12 @@ pub async fn update_avatar(token: &str, file: File) -> anyhow::Result<Asset> {
         .append_with_blob("file", &file)
         .map_err(js_to_anyhow)?;
 
-    request(url, Method::PUT, Some(&"".to_string()), Some(form_data), Some(token)).await
+    request(
+        url,
+        Method::PUT,
+        Some(&"".to_string()),
+        Some(form_data),
+        Some(token),
+    )
+    .await
 }

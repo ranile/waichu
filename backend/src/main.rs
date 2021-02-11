@@ -3,14 +3,14 @@ use backend::utils::single_page_application;
 use backend::{
     balanced_or_tree, debug_boxed, exists, setup_assets_directory, setup_database, setup_logger,
 };
-use std::env;
-use tokio::fs;
-use warp::Filter;
-use warp::hyper;
 use hyper::Server;
 use std::convert::Infallible;
+use std::env;
+use tokio::fs;
 use tower::ServiceBuilder;
 use tower_http::compression::CompressionLayer;
+use warp::hyper;
+use warp::Filter;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -72,9 +72,7 @@ async fn main() -> anyhow::Result<()> {
             .layer(CompressionLayer::new())
             .service(svc);
 
-        async move {
-            Ok::<_, Infallible>(svc)
-        }
+        async move { Ok::<_, Infallible>(svc) }
     });
 
     let addr = ([0, 0, 0, 0], port).into();

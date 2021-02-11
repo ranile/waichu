@@ -1826,6 +1826,7 @@ dependencies = [
 [[package]]
 name = "reqwasm"
 version = "0.1.0"
+source = "git+https://github.com/hamza1311/reqwasm#1280c9712fb1f632955631b00a625a6b5af54f55"
 dependencies = [
  "anyhow",
  "js-sys",

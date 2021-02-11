@@ -4,7 +4,7 @@ use common::{Message, MessageType, Room, RoomMember, User};
 use sqlx::types::Uuid;
 use sqlx::PgConnection;
 use std::sync::Arc;
-use tracing::{instrument, debug, error};
+use tracing::{debug, error, instrument};
 
 #[instrument]
 pub async fn create(db: &mut PgConnection, room: Room) -> anyhow::Result<Room> {
@@ -53,11 +53,11 @@ pub async fn get(db: &mut PgConnection, uuid: Uuid) -> anyhow::Result<Option<Roo
         Ok(None) => {
             debug!("room not found");
             Ok(None)
-        },
+        }
         Err(e) => {
             error!("error during fetching room: {}", e);
             Err(anyhow::anyhow!(e))
-        },
+        }
     }
 }
 

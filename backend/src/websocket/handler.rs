@@ -11,9 +11,9 @@ use sqlx::PgPool;
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use tokio::time::{Duration, Instant};
+use tokio_stream::wrappers::UnboundedReceiverStream;
 use warp::filters::ws::WebSocket;
 use warp::ws::Message;
-use tokio_stream::wrappers::UnboundedReceiverStream;
 
 /// How often heartbeat pings are sent
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);

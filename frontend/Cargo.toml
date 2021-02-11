@@ -23,8 +23,8 @@ chrono = { version = "0.4", features = ["serde", "wasmbind"] }
 yew-material = { git = "https://github.com/hamza1311/yew-material/", features = ["full"] }
 #yew-material = { path = "../../yew-material/yew-material", features = ["full"] }
 yew-md = { git = "https://github.com/hamza1311/yew-md", branch = "master-yew" }
-reqwasm = { path = "../../reqwasm" }
-# reqwasm = { git = "https://github.com/hamza1311/reqwasm" }
+#reqwasm = { path = "../../reqwasm" }
+reqwasm = { git = "https://github.com/hamza1311/reqwasm" }
 common = { path = "../common" }
 
 [dependencies.web-sys]

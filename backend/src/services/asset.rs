@@ -2,8 +2,8 @@ use common::Asset;
 use sqlx::types::Uuid;
 use sqlx::PgConnection;
 use std::sync::Arc;
-use tracing::instrument;
 use tracing::debug;
+use tracing::instrument;
 
 #[instrument]
 pub async fn create(db: &mut PgConnection, asset: Asset) -> anyhow::Result<Asset> {

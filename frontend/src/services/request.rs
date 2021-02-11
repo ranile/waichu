@@ -1,6 +1,6 @@
 use anyhow::Context;
 use common::errors::ApiError;
-use reqwasm::{Request, Method};
+use reqwasm::{Method, Request};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::fmt;
@@ -61,7 +61,7 @@ pub async fn request<T: Serialize, R: DeserializeOwned>(
 
     let resp = builder.send().await?;
     let status = resp.status();
-    if 300 > status && status >= 200 {
+    if (200..300).contains(&status) {
         let res = resp.json::<R>().await;
         if status == 204 {
             res.context(NoContent)
